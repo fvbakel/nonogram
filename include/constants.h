@@ -1,5 +1,4 @@
-#ifndef _CONSTANTS_H
-#define _CONSTANTS_H	1
+#pragma once
 
 #include <limits>
 
@@ -15,5 +14,3 @@ const int POS_NA = -1;
 
 constexpr int MAX_VARIATION = std::numeric_limits<int>::max();
 const int MAX_SOLUTIONS = 1000000;
-
-#endif /* <constants.h> included.  */

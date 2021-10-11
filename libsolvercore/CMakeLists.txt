@@ -8,9 +8,9 @@ include(CTest)
 enable_testing()
 
 FILE(GLOB MyCppSources ./classes/*.cpp)
-FILE(GLOB MyCppheaders ./include/*.h)
+FILE(GLOB MyCppheaders ${nonogram_SOURCE_DIR}/include/*.h)
 add_library(libsolvercore ${MyCppSources})
-target_include_directories(libsolvercore PUBLIC ./include
+target_include_directories(libsolvercore PUBLIC ../include
                             INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include()
 )
 

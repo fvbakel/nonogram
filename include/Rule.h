@@ -1,5 +1,4 @@
-#ifndef _RULE_H
-#define _RULE_H	1
+#pragma once
 
 #include <unordered_set>
 
@@ -69,5 +68,3 @@ class Rule {
         void calc_locks();
 
 };
-
-#endif

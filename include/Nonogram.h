@@ -1,5 +1,4 @@
-#ifndef _NONOGRAM_H
-#define _NONOGRAM_H	1
+#pragma once
 
 #include <MainConstraint.h>
 #include <Location.h>
@@ -89,4 +88,3 @@ class Nonogram {
         void enable_rule_improve_log();
 };
 
-#endif

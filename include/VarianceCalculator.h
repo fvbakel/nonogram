@@ -1,5 +1,4 @@
-#ifndef _VARIANCECALCULATOR_H
-#define _VARIANCECALCULATOR_H	1
+#pragma once
 
 #include <unordered_map>
 #include <string>
@@ -23,5 +22,3 @@ class VarianceCalculator {
         int get_variance(int nr_of_segments,int nr_of_white_space);
 
 };
-
-#endif

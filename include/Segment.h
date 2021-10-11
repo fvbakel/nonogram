@@ -1,5 +1,4 @@
-#ifndef _SEGMENT_H
-#define _SEGMENT_H	1
+#pragma once
 
 #include <constants.h>
 #include <vector>
@@ -80,4 +79,3 @@ class Segment {
 
 typedef std::vector<Segment*>    segments;
 
-#endif /* <Segment.h> included.  */

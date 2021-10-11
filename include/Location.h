@@ -1,5 +1,4 @@
-#ifndef _LOCATION_H
-#define _LOCATION_H	1
+#pragma once
 
 #include <vector>
 #include <string>
@@ -64,4 +63,3 @@ class Location {
 
 typedef std::vector<Location*>    locations;
 
-#endif

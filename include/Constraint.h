@@ -1,5 +1,4 @@
-#ifndef _CONSTRAINT_H
-#define _CONSTRAINT_H	1
+#pragma once
 
 #include <vector>
 
@@ -83,5 +82,3 @@ class Constraint {
 };
 
 typedef std::vector<Constraint*>    constraints;
-
-#endif

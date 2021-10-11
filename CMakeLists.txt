@@ -16,4 +16,4 @@ include(CPack)
 install(TARGETS nonogram DESTINATION bin)
 
 
-add_test(NAME Runs COMMAND nonogram)
+add_test(NAME Runs COMMAND nonogram ./puzzle/tiger.non)

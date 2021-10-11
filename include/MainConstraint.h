@@ -1,5 +1,4 @@
-#ifndef _MAINCONSTRAINT_H
-#define _MAINCONSTRAINT_H	1
+#pragma once
 
 #include <vector>
 
@@ -16,4 +15,3 @@ class MainConstraint : public Constraint {
 
 typedef std::vector<MainConstraint*>    main_constraints;
 
-#endif
