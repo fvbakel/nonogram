@@ -4,6 +4,7 @@ project(nonogram VERSION 0.1.0)
 include(CTest)
 enable_testing()
 
+add_subdirectory(hello)
 add_subdirectory(libsolvercore)
 add_executable(nonogram ./solver/main.cpp)
 target_link_libraries(nonogram PUBLIC libsolvercore)
@@ -17,3 +18,4 @@ install(TARGETS nonogram DESTINATION bin)
 
 
 add_test(NAME Runs COMMAND nonogram ./puzzle/tiger.non)
+add_test(NAME RunHello COMMAND hello)
