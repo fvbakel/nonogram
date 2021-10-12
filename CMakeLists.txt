@@ -19,7 +19,7 @@ if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR MODERN_CMAKE_BUILD_TESTING)
    add_subdirectory(test_imgsolver)
 endif()
 
-
+install(FILES ./tools/process_dir.sh DESTINATION bin)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
