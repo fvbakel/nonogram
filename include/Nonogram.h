@@ -75,6 +75,8 @@ class Nonogram {
         bool solve();
 
         Location *get_Location(const int x, const int y);
+        int get_x_size();
+        int get_y_size();
 
         bool is_input_valid();
         bool is_solved();

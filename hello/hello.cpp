@@ -10,8 +10,22 @@ int main(int argc, char** argv) {
     namedWindow("Output",1);
     
     //initialize a 120X350 matrix of black pixels:
-    Mat output = Mat::zeros( 120, 350, CV_8UC3 );
+    //Mat output = Mat::zeros( 120, 350, CV_8UC3 );
+    Mat output(120,350,CV_8UC3, Scalar(255,255, 255));
     
+    int x = 0;
+    int y = 0;
+    int width = 10;
+    int height = 10;
+    // our rectangle...
+    cv::Rect rect(x, y, width, height);
+    
+    cv::rectangle(output, rect, cv::Scalar(0, 0, 0),FILLED);
+    
+    output.at<cv::Vec3b>(12,12)[0]=0; // change it to black
+    output.at<cv::Vec3b>(12,12)[1]=0;
+    output.at<cv::Vec3b>(12,12)[2]=0;
+
     //write text on the matrix:
     putText(output,
             "Hello World :)",

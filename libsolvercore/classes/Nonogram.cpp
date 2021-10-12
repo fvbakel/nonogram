@@ -139,6 +139,8 @@ void Nonogram::read_file() {
 
         } else {
             cout << "ERROR: Unable to open file: " << m_filename << "\n";
+            m_valid_checked = true;
+            m_valid = false;
         }
     }
 }
@@ -183,6 +185,13 @@ Location* Nonogram::get_Location(const int x, const int y) {
         printf("ERROR: Location %d,%d does not exists.\n", x, y);
         return nullptr;
     }
+}
+
+int Nonogram::get_x_size() {
+    return m_x_size;
+}
+int Nonogram::get_y_size() {
+    return m_y_size;
 }
 
 bool Nonogram::is_input_valid() {
