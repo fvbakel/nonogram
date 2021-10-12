@@ -9,9 +9,9 @@ enable_testing()
 FILE(GLOB MyCppSources ./classes/*.cpp)
 #FILE(GLOB_RECURSE MyCppheaders ${nonogram_all_SOURCE_DIR}/include/*.h)
 file(GLOB MyCppheaders CONFIGURE_DEPENDS "${nonogram_all_SOURCE_DIR}/include/solvercore/*.h")
-add_library(libsolvercore ${MyCppSources} ${MyCppheaders})
-target_include_directories(libsolvercore PUBLIC ../include
-                            INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include()
+add_library(solvercore ${MyCppSources} ${MyCppheaders})
+target_include_directories(solvercore PUBLIC ../include
+                            INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include/solvercore()
 )
 
 source_group(
@@ -21,8 +21,8 @@ source_group(
 
 
 # install rules
-install(TARGETS libsolvercore DESTINATION lib)
-install(FILES ${MyCppheaders} DESTINATION include)
+install(TARGETS solvercore DESTINATION lib)
+install(FILES ${MyCppheaders} DESTINATION include/solvercore)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
@@ -30,8 +30,8 @@ include(CPack)
 
 if(BUILD_TESTING)
     add_executable(test_nonogram ./test/test_nonogram.cpp)
-    target_link_libraries(test_nonogram PUBLIC libsolvercore)
+    target_link_libraries(test_nonogram PUBLIC solvercore)
     target_include_directories(test_nonogram PUBLIC ./include)
 endif()
 
-add_test(NAME test_libsolvercore COMMAND test_nonogram)
+add_test(NAME test_solvercore COMMAND test_nonogram)

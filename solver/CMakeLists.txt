@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 # set the project name
 #project(nonogram)
 
-set(OpenCV_STATIC ON)
+#set(OpenCV_STATIC ON)
 #set (OpenCV_DIR /usr/share/OpenCV)
 set (OpenCV_DIR /usr/lib/x86_64-linux-gnu/cmake/opencv4)
 
@@ -15,7 +15,7 @@ add_executable(nonogram main.cpp)
 target_include_directories(nonogram PUBLIC
                            "${PROJECT_BINARY_DIR}"
                            )
-target_link_libraries(nonogram libsolvercore ${OpenCV_LIBS})
+target_link_libraries(nonogram solvercore ${OpenCV_LIBS})
 
 # install rules
 install(TARGETS nonogram DESTINATION bin)
