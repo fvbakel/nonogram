@@ -2,10 +2,10 @@
 
 #include <vector>
 
-#include <constants.h>
-#include <Segment.h>
-#include <Location.h>
-#include <Rule.h>
+#include <solvercore/constants.h>
+#include <solvercore/Segment.h>
+#include <solvercore/Location.h>
+#include <solvercore/Rule.h>
 
 class Rule;
 class Constraint {

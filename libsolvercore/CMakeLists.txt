@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(libsolvercore VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -8,11 +7,18 @@ include(CTest)
 enable_testing()
 
 FILE(GLOB MyCppSources ./classes/*.cpp)
-FILE(GLOB MyCppheaders ${nonogram_SOURCE_DIR}/include/*.h)
-add_library(libsolvercore ${MyCppSources})
+#FILE(GLOB_RECURSE MyCppheaders ${nonogram_all_SOURCE_DIR}/include/*.h)
+file(GLOB MyCppheaders CONFIGURE_DEPENDS "${nonogram_all_SOURCE_DIR}/include/solvercore/*.h")
+add_library(libsolvercore ${MyCppSources} ${MyCppheaders})
 target_include_directories(libsolvercore PUBLIC ../include
                             INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include()
 )
+
+source_group(
+  TREE "${PROJECT_SOURCE_DIR}/include"
+  PREFIX "Header Files"
+  FILES ${MyCppheaders})
+
 
 # install rules
 install(TARGETS libsolvercore DESTINATION lib)
@@ -28,4 +34,4 @@ if(BUILD_TESTING)
     target_include_directories(test_nonogram PUBLIC ./include)
 endif()
 
-add_test(NAME Runs COMMAND test_nonogram)
+add_test(NAME test_libsolvercore COMMAND test_nonogram)

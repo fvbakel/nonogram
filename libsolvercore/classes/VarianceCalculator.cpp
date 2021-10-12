@@ -1,4 +1,4 @@
-#include <VarianceCalculator.h>
+#include <solvercore/VarianceCalculator.h>
 #include <sstream>
 #include <iostream>
 

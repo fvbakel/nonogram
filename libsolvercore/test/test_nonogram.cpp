@@ -4,12 +4,12 @@
 #include <vector>
 #include <assert.h>
 
-#include <Segment.h>
-#include <MainConstraint.h>
-#include <Nonogram.h>
-#include <Location.h>
-#include <constants.h>
-#include <VarianceCalculator.h>
+#include <solvercore/Segment.h>
+#include <solvercore/MainConstraint.h>
+#include <solvercore/Nonogram.h>
+#include <solvercore/Location.h>
+#include <solvercore/constants.h>
+#include <solvercore/VarianceCalculator.h>
 
 
 /*

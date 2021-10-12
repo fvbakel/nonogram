@@ -1,4 +1,4 @@
-#include <MainConstraint.h>
+#include <solvercore/MainConstraint.h>
 #include <stdio.h>
 
 MainConstraint::MainConstraint(enum direction direction,std::vector<int> *blacks)  : Constraint(direction) {

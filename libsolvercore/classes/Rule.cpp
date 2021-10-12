@@ -1,4 +1,4 @@
-#include <Rule.h>
+#include <solvercore/Rule.h>
 
 Rule::Rule(Constraint *contraint) {
     m_constraint = contraint;

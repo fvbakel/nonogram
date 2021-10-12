@@ -2,10 +2,10 @@
 
 #include <unordered_set>
 
-#include <constants.h>
-#include <Constraint.h>
-#include <Segment.h>
-#include <Location.h>
+#include <solvercore/constants.h>
+#include <solvercore/Constraint.h>
+#include <solvercore/Segment.h>
+#include <solvercore/Location.h>
 
 class Constraint;
 class Rule {

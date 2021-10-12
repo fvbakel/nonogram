@@ -2,7 +2,7 @@
 #include <fstream>
 #include <sstream>
 
-#include <Nonogram.h>
+#include <solvercore/Nonogram.h>
 
 Nonogram::Nonogram() {
     return;

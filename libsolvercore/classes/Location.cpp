@@ -1,4 +1,4 @@
-#include <Location.h>
+#include <solvercore/Location.h>
 #include <stdio.h>
 #include <iostream>
 #include <sstream>

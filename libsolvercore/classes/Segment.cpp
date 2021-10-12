@@ -1,4 +1,4 @@
-#include <Segment.h>
+#include <solvercore/Segment.h>
 #include <stdio.h>
 #include <sstream>
 

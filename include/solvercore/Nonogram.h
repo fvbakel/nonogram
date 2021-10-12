@@ -1,10 +1,11 @@
 #pragma once
 
-#include <MainConstraint.h>
-#include <Location.h>
 #include <string>
 #include <vector>
 #include <unordered_set>
+
+#include <solvercore/MainConstraint.h>
+#include <solvercore/Location.h>
 
 using namespace std;
 

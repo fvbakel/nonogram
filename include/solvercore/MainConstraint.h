@@ -2,8 +2,8 @@
 
 #include <vector>
 
-#include <constants.h>
-#include <Constraint.h>
+#include <solvercore/constants.h>
+#include <solvercore/Constraint.h>
 
 
 class MainConstraint : public Constraint {

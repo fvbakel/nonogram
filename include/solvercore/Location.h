@@ -2,8 +2,8 @@
 
 #include <vector>
 #include <string>
-#include <constants.h>
-#include <Segment.h>
+#include <solvercore/constants.h>
+#include <solvercore/Segment.h>
 
 
 class Location {

@@ -6,8 +6,8 @@
 #include <iostream>
 
 
-#include <Constraint.h>
-#include <VarianceCalculator.h>
+#include <solvercore/Constraint.h>
+#include <solvercore/VarianceCalculator.h>
 
 Constraint::Constraint(enum direction direction) {
     m_direction = direction;

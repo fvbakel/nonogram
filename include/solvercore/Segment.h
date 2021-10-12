@@ -1,6 +1,6 @@
 #pragma once
 
-#include <constants.h>
+#include <solvercore/constants.h>
 #include <vector>
 
 class Segment {
