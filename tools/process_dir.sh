@@ -1,21 +1,6 @@
 #!/bin/sh
 
-solver=nonogram
-log_rule_improve=''
-
-if [ -n "$2" ]; then
-  if [ "-r" = "$2" ]; then
-    log_rule_improve=$2
-  else
-    solver=$2
-  fi
-fi
-
-if [ -n "$3" ]; then
-  if [ "-r" = "$3" ]; then
-    log_rule_improve=$3
-  fi
-fi
+solver=~/bin/nonogram
 
 if [ -n "$1" ]; then
   echo "Processing directory: $1"
@@ -25,15 +10,21 @@ else
   exit
 fi
 
-#FILES=`find -L ~/git/nonogram-db -name "*.non"`
-FILES=`find -L ${process_dir} -name "*.non"`
+if [ -n "$2" ]; then
+  echo "Processing file filter: $2"
+  file_filter=$2
+else
+  echo "File filter not supplied."
+  exit
+fi
+
+shift
+shift
+
+FILES=`find -L ${process_dir} -name "${file_filter}"`
 for file in $FILES
 do
-    CMD="${solver} ${file} ${log_rule_improve}"
+    CMD="${solver} -f ${file} ${@}"
     echo $CMD
     $CMD
 done
-
-
-
-
