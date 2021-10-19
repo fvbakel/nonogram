@@ -5,12 +5,12 @@
 #include <tesseract/baseapi.h>
 #include <solvercore/Nonogram.h>
 
-
-
 namespace imgsolver {
     static const cv::Scalar WHITE_SCALAR = cv::Scalar(255,255,255);
     static const int UNDEFINED = -2;
-    static const float Y_CLUE_GAB_FACTOR = 1.2;
+    // 40% larger gab than the smallest gab is still considered the same number
+    // TODO: make this a member variable that can be set?
+    static const float Y_CLUE_GAB_FACTOR = 1.4;
 
     class GridFinder {
         private:

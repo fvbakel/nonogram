@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.10)
 
 #set(OpenCV_STATIC ON)
 #set (OpenCV_DIR /usr/share/OpenCV)
-set (OpenCV_DIR /usr/lib/x86_64-linux-gnu/cmake/opencv4)
+#set (OpenCV_DIR /usr/lib/x86_64-linux-gnu/cmake/opencv4)
 
 #find_package(OpenCV REQUIRED core highgui)
 find_package(OpenCV REQUIRED)
@@ -15,7 +15,7 @@ add_executable(nonogram main.cpp)
 target_include_directories(nonogram PUBLIC
                            "${PROJECT_BINARY_DIR}"
                            )
-target_link_libraries(nonogram solvercore ${OpenCV_LIBS})
+target_link_libraries(nonogram imgsolver solvercore ${OpenCV_LIBS})
 
 # install rules
 install(TARGETS nonogram DESTINATION bin)
@@ -35,4 +35,10 @@ set_tests_properties(nonogram_wrong_file PROPERTIES
   FAIL_REGULAR_EXPRESSION "Solved successfully"
   PASS_REGULAR_EXPRESSION "ERROR: Unable to open file"
 )
+
+add_test(NAME nonogram_png_file COMMAND nonogram -f ../../test_data/puzzle-30-nonogram.png)
+set_tests_properties(nonogram_png_file PROPERTIES
+  PASS_REGULAR_EXPRESSION "Solved with rules only."
+)
+
 

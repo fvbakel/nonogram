@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <imgsolver/InputImage.h>
 #include <imgsolver/GridFinder.h>
+#include <solvercore/Nonogram.h>
 
 using namespace imgsolver;
 using namespace std;
@@ -233,6 +234,56 @@ void test_gridfinder() {
     expected.clear();
     expected.assign({3,1,2,4});
     assert_clue(input->get_y_clue(9),&expected,msg_str);
+
+    msg_str = string("get_y_clue(10): ");
+    expected.clear();
+    expected.assign({4,2,3,1});
+    assert_clue(input->get_y_clue(10),&expected,msg_str);
+
+    msg_str = string("get_y_clue(11): ");
+    expected.clear();
+    expected.assign({2,2,2,4,2});
+    assert_clue(input->get_y_clue(11),&expected,msg_str);
+
+    msg_str = string("get_y_clue(12): ");
+    expected.clear();
+    expected.assign({1,3,10});
+    assert_clue(input->get_y_clue(12),&expected,msg_str);
+
+    msg_str = string("get_y_clue(13): ");
+    expected.clear();
+    expected.assign({5,8});
+    assert_clue(input->get_y_clue(13),&expected,msg_str);
+
+    msg_str = string("get_y_clue(14): ");
+    expected.clear();
+    expected.assign({2,3,5});
+    assert_clue(input->get_y_clue(14),&expected,msg_str);
+
+    msg_str = string("get_y_clue(15): ");
+    expected.clear();
+    expected.assign({1,5,2});
+    assert_clue(input->get_y_clue(15),&expected,msg_str);
+
+    msg_str = string("get_y_clue(16): ");
+    expected.clear();
+    expected.assign({1,4});
+    assert_clue(input->get_y_clue(16),&expected,msg_str);
+
+    msg_str = string("get_y_clue(17): ");
+    expected.clear();
+    expected.assign({1,7});
+    assert_clue(input->get_y_clue(17),&expected,msg_str);
+
+    msg_str = string("get_y_clue(18): ");
+    expected.clear();
+    expected.assign({11});
+    assert_clue(input->get_y_clue(18),&expected,msg_str);
+
+    msg_str = string("get_y_clue(19): ");
+    expected.clear();
+    expected.assign({8});
+    assert_clue(input->get_y_clue(19),&expected,msg_str);
 
     delete input;
     delete finder;

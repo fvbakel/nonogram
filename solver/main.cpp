@@ -2,10 +2,12 @@
 #include <vector>
 #include <assert.h>
 #include <algorithm>
+#include <iostream>
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core/types_c.h>
 
+#include <imgsolver/GridFinder.h>
 #include <solvercore/Nonogram.h>
 
 class InputParser{
@@ -75,27 +77,56 @@ void print_solved_status(Nonogram *nonogram) {
     }
 }
 
+bool hasEnding (std::string const &fullString, std::string const &ending) {
+    if (fullString.length() >= ending.length()) {
+        return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
+    } else {
+        return false;
+    }
+}
+
 void process_file ( string &filename, 
                     bool rule_improve_log = false,
                     bool dispay = false
 ) {
     printf("Start processing: %s\n",filename.c_str());
-    Nonogram *nonogram = new Nonogram(filename);
-    if (nonogram->is_input_valid()) {
-        if (rule_improve_log) {
-            nonogram->enable_rule_improve_log();
-        }
-        nonogram->solve();
+    bool is_image = false;
+    Nonogram *nonogram = nullptr;
+    NonogramInput *input = nullptr;
+    if (hasEnding(filename,string("png"))) {
+        Mat img = cv::imread(filename, IMREAD_GRAYSCALE);
+        imgsolver::GridFinder *finder = new imgsolver::GridFinder(&img);
 
-        if (dispay) {
-            print_solved_status(nonogram);
-            display_nonogram(filename,nonogram);
-        } else {
-            nonogram->print();
-            print_solved_status(nonogram);
+        input = finder->parse();
+        nonogram = new Nonogram(*input);
+    } else if ( hasEnding(filename,string("non")) ||
+                hasEnding(filename,string("txt"))
+    ) {
+        nonogram = new Nonogram(filename);
+    } else {
+        printf("Error, fileformat is not supported!\n");
+    }
+
+    if (nonogram!=nullptr) {
+        if (nonogram->is_input_valid()) {
+            if (rule_improve_log) {
+                nonogram->enable_rule_improve_log();
+            }
+            nonogram->solve();
+
+            if (dispay) {
+                print_solved_status(nonogram);
+                display_nonogram(filename,nonogram);
+            } else {
+                nonogram->print();
+                print_solved_status(nonogram);
+            }
+        }
+        delete nonogram;
+        if (input != nullptr) {
+            delete input;
         }
     }
-    delete nonogram;
     printf("End processing: %s\n",filename.c_str());
 }
 
@@ -107,7 +138,7 @@ void print_usage() {
     printf("  -i    Log possible improvements for the rule mechanism\n");
     printf("  -s    Show solution as a image\n");
     printf("  Required:\n");
-    printf("  -f    Input file name in txt of non format\n");
+    printf("  -f    Input file name. Supported formats: txt,non and png\n");
 }
 
 int main(int argc, char *argv[]) {
