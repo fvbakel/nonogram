@@ -90,14 +90,13 @@ void process_file ( string &filename,
                     bool dispay = false
 ) {
     printf("Start processing: %s\n",filename.c_str());
-    bool is_image = false;
     Nonogram *nonogram = nullptr;
     NonogramInput *input = nullptr;
     if (hasEnding(filename,string("png"))) {
         Mat img = cv::imread(filename, IMREAD_GRAYSCALE);
-        imgsolver::GridFinder *finder = new imgsolver::GridFinder(&img);
+        imgsolver::GridFinder finder = imgsolver::GridFinder(&img);
 
-        input = finder->parse();
+        input = finder.parse();
         nonogram = new Nonogram(*input);
     } else if ( hasEnding(filename,string("non")) ||
                 hasEnding(filename,string("txt"))
