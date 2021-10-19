@@ -8,6 +8,28 @@ Nonogram::Nonogram() {
     return;
 }
 
+Nonogram::Nonogram(NonogramInput &input) {
+    enum direction cur_dir = x_dir;
+    for (int i = 0 ; i< input.get_nr_of_x_clues();i++) {
+        MainConstraint *constraint = new MainConstraint(cur_dir,input.get_x_clue(i));
+        m_x_contraints.push_back(constraint);
+    }
+
+    cur_dir = y_dir;
+    for (int i = 0 ; i< input.get_nr_of_y_clues();i++) {
+        MainConstraint *constraint = new MainConstraint(cur_dir,input.get_y_clue(i));
+        m_y_contraints.push_back(constraint);
+    }
+
+    m_x_size = m_x_contraints.size();
+    m_y_size = m_y_contraints.size();
+    create_locations();
+
+    if (!is_input_valid()) {
+        cout << "ERROR: Invalid input!\n";
+    }
+}
+
 Nonogram::Nonogram(const string &filename) {
     m_filename = string(filename);
     this->read_file();

@@ -35,7 +35,7 @@ class InputParser{
 
 using namespace cv;
 
-void display(string &filename,Nonogram *nonogram) {
+void display_nonogram(string &filename,Nonogram *nonogram) {
     namedWindow(filename,1);
     int x_size = nonogram->get_x_size();
     int y_size = nonogram->get_y_size();
@@ -67,7 +67,18 @@ void display(string &filename,Nonogram *nonogram) {
     waitKey(0);
 }
 
-void process_file (string &filename, bool rule_improve_log = false) {
+void print_solved_status(Nonogram *nonogram) {
+    if(nonogram->is_solved()) {
+        printf("Solved successfully\n");
+    } else {
+        printf("Unable to solve\n");
+    }
+}
+
+void process_file ( string &filename, 
+                    bool rule_improve_log = false,
+                    bool dispay = false
+) {
     printf("Start processing: %s\n",filename.c_str());
     Nonogram *nonogram = new Nonogram(filename);
     if (nonogram->is_input_valid()) {
@@ -75,12 +86,13 @@ void process_file (string &filename, bool rule_improve_log = false) {
             nonogram->enable_rule_improve_log();
         }
         nonogram->solve();
-        nonogram->print();
 
-        if(nonogram->is_solved()) {
-            printf("Solved successfully\n");
+        if (dispay) {
+            print_solved_status(nonogram);
+            display_nonogram(filename,nonogram);
         } else {
-            printf("Unable to solve\n");
+            nonogram->print();
+            print_solved_status(nonogram);
         }
     }
     delete nonogram;
@@ -93,7 +105,7 @@ void print_usage() {
     printf("  Optional:\n");
     printf("  -h    Display this help text\n");
     printf("  -i    Log possible improvements for the rule mechanism\n");
-    printf("  -s    Display solution as a image\n");
+    printf("  -s    Show solution as a image\n");
     printf("  Required:\n");
     printf("  -f    Input file name in txt of non format\n");
 }
@@ -115,7 +127,8 @@ int main(int argc, char *argv[]) {
 
     process_file (
         filename,
-        input.cmdOptionExists("-i")
+        input.cmdOptionExists("-i"),
+        input.cmdOptionExists("-s")
     );
     return 0;
 }

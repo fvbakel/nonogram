@@ -6,6 +6,7 @@
 
 #include <solvercore/MainConstraint.h>
 #include <solvercore/Location.h>
+#include <solvercore/NonogramInput.h>
 
 using namespace std;
 
@@ -26,6 +27,7 @@ class Nonogram {
         locations           m_locations;
 
         bool solve_constraint_backtrack(int constraint_index = 0);
+
         void read_file();
 
         void create_locations();
@@ -71,6 +73,7 @@ class Nonogram {
     public:
         Nonogram();
         Nonogram(const string &filename);
+        Nonogram(NonogramInput &input);
         ~Nonogram();
 
         bool solve();

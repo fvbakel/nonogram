@@ -2,21 +2,29 @@
 # show up in IDEs unless they are listed in add_library.
 
 # Optionally glob, but only for CMake 3.12 or later:
-file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${Nonogram_all_SOURCE_DIR}/include/imgsolver/*.h")
+FILE(GLOB MyCppSources ./*.cpp)
+file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${nonogram_all_SOURCE_DIR}/include/imgsolver/*.h")
 
 #set(OpenCV_STATIC ON)
 #set (OpenCV_DIR /usr/share/OpenCV)
-set (OpenCV_DIR /usr/lib/x86_64-linux-gnu/cmake/opencv4)
-
+#set (OpenCV_DIR /usr/lib/x86_64-linux-gnu/cmake/opencv4)
 
 #find_package(OpenCV REQUIRED core highgui)
 find_package(OpenCV REQUIRED)
+find_package( PkgConfig REQUIRED)
+pkg_search_module( TESSERACT REQUIRED tesseract )
+#pkg_search_module( LEPTONICA REQUIRED lept )
 
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 # Make an automatic library - will be static or dynamic based on user setting
-add_library(imgsolver InputParser.cpp ${HEADER_LIST})
-target_link_libraries(imgsolver solvercore ${OpenCV_LIBS})
+add_library(imgsolver ${MyCppSources} ${HEADER_LIST})
+
+target_link_libraries( imgsolver solvercore)
+target_link_libraries( imgsolver ${OpenCV_LIBS})
+target_link_libraries( imgsolver ${TESSERACT_LIBRARIES} )
+target_link_libraries( imgsolver ${LEPTONICA_LIBRARIES} )
+
 
 # We need this directory, and users of our library will need it too
 target_include_directories(imgsolver PUBLIC ../include)

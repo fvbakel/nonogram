@@ -1,12 +1,13 @@
-#include <stdio.h>
+#include <iostream>
+#include <sstream>
 #include <vector>
-#include <assert.h>
 #include <algorithm>
-#include <opencv2/opencv.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/core/types_c.h>
+#include <imgsolver/InputImage.h>
+#include <imgsolver/GridFinder.h>
 
-#include <solvercore/Nonogram.h>
+using namespace imgsolver;
+using namespace std;
+using namespace cv;
 
 class InputParser{
     public:
@@ -33,69 +34,219 @@ class InputParser{
         std::vector <std::string> tokens;
 };
 
-using namespace cv;
 
-void display(string &filename,Nonogram *nonogram) {
-    namedWindow(filename,1);
-    int x_size = nonogram->get_x_size();
-    int y_size = nonogram->get_y_size();
-    Vec3b white_col = Vec3b(255,255, 255);
-    Vec3b black_col = Vec3b(0,0, 0);
-    Vec3b no_color_col = Vec3b(0,255, 0);
-    Mat result(y_size,x_size,CV_8UC3, Scalar(255,255, 255));
-    for (int y_index = 0; y_index < y_size; y_index++) {
-        for (int x_index = 0; x_index < x_size; x_index++) {
-            Location *location = nonogram->get_Location(x_index, y_index);
-            enum color loc_color = location->get_color();
-            Vec3b *chosen = &white_col;
-            if (loc_color == black) {
-                chosen = &black_col;
-            } else if (loc_color == no_color) {
-                chosen = &no_color_col;
-            }
-            result.at<Vec3b>(Point(x_index,y_index)) = *chosen;
-        }
-    }
 
-    int scale = 512 / x_size;
-    Mat scaled;
-    resize(result,scaled,Size(),scale,scale,INTER_NEAREST);
-    //display the image:
-    imshow(filename, scaled);
+void test_inputimage() {
+    std::cout << "Start " << __FUNCTION__ << "\n";
     
-    //wait for the user to press any key:
-    waitKey(0);
+    std::cout << "End " << __FUNCTION__ << "\n";
 }
 
-void process_file (string &filename, bool rule_improve_log = false) {
-    printf("Start processing: %s\n",filename.c_str());
-    Nonogram *nonogram = new Nonogram(filename);
-    if (nonogram->is_input_valid()) {
-        if (rule_improve_log) {
-            nonogram->enable_rule_improve_log();
-        }
-        nonogram->solve();
-        nonogram->print();
 
-        if(nonogram->is_solved()) {
-            printf("Solved successfully\n");
-        } else {
-            printf("Unable to solve\n");
+std::string vector_to_string(vector<int> *vect){
+    std::stringstream str_str;
+    for (int i = 0 ; i< vect->size();i++) {
+        if (i!=0) {
+            str_str << ",";
         }
+        str_str << vect->at(i);
     }
-    delete nonogram;
-    printf("End processing: %s\n",filename.c_str());
+    return str_str.str();
+}
+
+
+void assert_clue(vector<int> *clue, vector<int> *expected_clue, string &msg) {
+    bool correct = true;
+    if (clue->size() != expected_clue->size()) {
+        correct =false;
+    } else {
+
+    }
+    if (!correct) {
+        std::cerr << msg <<": Got: "<< vector_to_string(clue) <<" Expected " << vector_to_string(expected_clue) << "\n";
+        assert(correct);
+    }
+}
+
+static const char* FILENAME = "../../test_data/puzzle-30-nonogram.png";
+void test_gridfinder() {
+    std::cout << "Start " << __FUNCTION__ << "\n";
+
+    string filename = FILENAME;
+    Mat img = cv::imread(filename, IMREAD_GRAYSCALE);
+    GridFinder *finder = new GridFinder(&img);
+
+    NonogramInput *input = finder->parse();
+    assert(input->get_nr_of_x_clues() == 20);
+    assert(input->get_nr_of_y_clues() == 20);
+
+    string msg_str;
+    vector<int> expected;
+
+    msg_str = string("get_x_clue(0): ");
+    expected.clear();
+    expected.assign({2,2});
+    assert_clue(input->get_x_clue(0),&expected,msg_str);
+
+    msg_str = string("get_x_clue(1): ");
+    expected.clear();
+    expected.assign({2,2,2});
+    assert_clue(input->get_x_clue(1),&expected,msg_str);
+
+    msg_str = string("get_x_clue(2): ");
+    expected.clear();
+    expected.assign({1,2,2,2,1});
+    assert_clue(input->get_x_clue(2),&expected,msg_str);
+
+    msg_str = string("get_x_clue(3): ");
+    expected.clear();
+    expected.assign({2,9,1});
+    assert_clue(input->get_x_clue(3),&expected,msg_str);
+
+    msg_str = string("get_x_clue(4): ");
+    expected.clear();
+    expected.assign({2,10,2,2});
+    assert_clue(input->get_x_clue(4),&expected,msg_str);
+
+    msg_str = string("get_x_clue(5): ");
+    expected.clear();
+    expected.assign({4,4,2});
+    assert_clue(input->get_x_clue(5),&expected,msg_str);
+
+    msg_str = string("get_x_clue(6): ");
+    expected.clear();
+    expected.assign({3,3,2});
+    assert_clue(input->get_x_clue(6),&expected,msg_str);
+
+    msg_str = string("get_x_clue(7): ");
+    expected.clear();
+    expected.assign({1,2,4,3,2});
+    assert_clue(input->get_x_clue(7),&expected,msg_str);
+
+    msg_str = string("get_x_clue(8): ");
+    expected.clear();
+    expected.assign({1,2,2,2,5});
+    assert_clue(input->get_x_clue(8),&expected,msg_str);
+
+    msg_str = string("get_x_clue(9): ");
+    expected.clear();
+    expected.assign({4,1,2,4});
+    assert_clue(input->get_x_clue(9),&expected,msg_str);
+
+    msg_str = string("get_x_clue(10): ");
+    expected.clear();
+    expected.assign({3,2,1,2,4});
+    assert_clue(input->get_x_clue(10),&expected,msg_str);
+
+    msg_str = string("get_x_clue(11): ");
+    expected.clear();
+    expected.assign({2,3,2,3});
+    assert_clue(input->get_x_clue(11),&expected,msg_str);
+
+    msg_str = string("get_x_clue(12): ");
+    expected.clear();
+    expected.assign({1,3,3,2});
+    assert_clue(input->get_x_clue(12),&expected,msg_str);
+
+    msg_str = string("get_x_clue(13): ");
+    expected.clear();
+    expected.assign({6,4,2});
+    assert_clue(input->get_x_clue(13),&expected,msg_str);
+
+    msg_str = string("get_x_clue(14): ");
+    expected.clear();
+    expected.assign({2,12,1});
+    assert_clue(input->get_x_clue(14),&expected,msg_str);
+
+    msg_str = string("get_x_clue(15): ");
+    expected.clear();
+    expected.assign({11});
+    assert_clue(input->get_x_clue(15),&expected,msg_str);
+
+    msg_str = string("get_x_clue(16): ");
+    expected.clear();
+    expected.assign({3,7});
+    assert_clue(input->get_x_clue(16),&expected,msg_str);
+
+    msg_str = string("get_x_clue(17): ");
+    expected.clear();
+    expected.assign({4,2,2});
+    assert_clue(input->get_x_clue(17),&expected,msg_str);
+
+    msg_str = string("get_x_clue(18): ");
+    expected.clear();
+    expected.assign({2,2});
+    assert_clue(input->get_x_clue(18),&expected,msg_str);
+
+    msg_str = string("get_x_clue(19): ");
+    expected.clear();
+    expected.assign({2,2});
+    assert_clue(input->get_x_clue(19),&expected,msg_str);
+
+    /* Y clues*/
+    msg_str = string("get_y_clue(0): ");
+    expected.clear();
+    expected.assign({3,2});
+    assert_clue(input->get_y_clue(0),&expected,msg_str);
+
+    msg_str = string("get_y_clue(1): ");
+    expected.clear();
+    expected.assign({2,2,2,1});
+    assert_clue(input->get_y_clue(1),&expected,msg_str);
+
+    msg_str = string("get_y_clue(2): ");
+    expected.clear();
+    expected.assign({13,1});
+    assert_clue(input->get_y_clue(2),&expected,msg_str);
+
+    msg_str = string("get_y_clue(3): ");
+    expected.clear();
+    expected.assign({9,2});
+    assert_clue(input->get_y_clue(3),&expected,msg_str);
+
+    msg_str = string("get_y_clue(4): ");
+    expected.clear();
+    expected.assign({3,3,2});
+    assert_clue(input->get_y_clue(4),&expected,msg_str);
+
+    msg_str = string("get_y_clue(5): ");
+    expected.clear();
+    expected.assign({4,4});
+    assert_clue(input->get_y_clue(5),&expected,msg_str);
+
+    msg_str = string("get_y_clue(6): ");
+    expected.clear();
+    expected.assign({4,3,2,1});
+    assert_clue(input->get_y_clue(6),&expected,msg_str);
+
+    msg_str = string("get_y_clue(7): ");
+    expected.clear();
+    expected.assign({2,2,2,2,2,2});
+    assert_clue(input->get_y_clue(7),&expected,msg_str);
+
+    msg_str = string("get_y_clue(8): ");
+    expected.clear();
+    expected.assign({1,2,1,1,5});
+    assert_clue(input->get_y_clue(8),&expected,msg_str);
+
+    msg_str = string("get_y_clue(9): ");
+    expected.clear();
+    expected.assign({3,1,2,4});
+    assert_clue(input->get_y_clue(9),&expected,msg_str);
+
+    delete input;
+    delete finder;
+    std::cout << "End " << __FUNCTION__ << "\n";
 }
 
 void print_usage() {
-    printf("Usage:\n");
-    printf("nonogram [-h] [-i] [-s] -f filename\n");
-    printf("  Optional:\n");
-    printf("  -h    Display this help text\n");
-    printf("  -i    Log possible improvements for the rule mechanism\n");
-    printf("  -s    Display solution as a image\n");
-    printf("  Required:\n");
-    printf("  -f    Input file name in txt of non format\n");
+    std::cout << "Usage:\n";
+    std::cout << "test_imgsolver [-h] [-i] [-s] -f filename\n";
+    std::cout << "  Optional:\n";
+    std::cout << "  -h            Display this help text\n";
+    std::cout << "  -a            Run all tests\n";
+    std::cout << "  -InputImg     Run ImgInput test\n";
+    std::cout << "  -GridFinder   Run ImgInput test\n";
 }
 
 int main(int argc, char *argv[]) {
@@ -104,16 +255,20 @@ int main(int argc, char *argv[]) {
     if(input.cmdOptionExists("-h")){
         print_usage();
         exit(0);
-    } else if (!input.cmdOptionExists("-f")) {
-        printf("Missing -f parameter\n");
-        print_usage();
-        exit(0);
-    }
-    std::string filename = input.getCmdOption("-f");
+    } 
 
-    process_file (
-        filename,
-        input.cmdOptionExists("-i")
-    );
+    bool all =false;
+    if(input.cmdOptionExists("-a")){
+        all = true;
+    }
+
+    if(input.cmdOptionExists("-InputImg") || all){
+        test_inputimage() ;
+    }
+
+    if(input.cmdOptionExists("-GridFinder") || all){
+        test_gridfinder() ;
+    }
+
     return 0;
 }

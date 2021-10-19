@@ -11,7 +11,6 @@
 #include <solvercore/constants.h>
 #include <solvercore/VarianceCalculator.h>
 
-
 /*
 Helper functions
 */
@@ -755,13 +754,80 @@ void test_segment() {
 }
 
 void test_get_variance() {
-    
+    printf("Start %s\n",__FUNCTION__);
     assert(VarianceCalculator::getCalculator()->get_variance(1,1) == 1);
     assert(VarianceCalculator::getCalculator()->get_variance(3,3) == 10);
     assert(VarianceCalculator::getCalculator()->get_variance(3,3) == 10);
     assert(VarianceCalculator::getCalculator()->get_variance(3,8) == 45);
     assert(VarianceCalculator::getCalculator()->get_variance(5,7) == 330);
     assert(VarianceCalculator::getCalculator()->get_variance(9,16) == 735471);
+    printf("End %s\n",__FUNCTION__);
+}
+
+void test_NonogramInput() {
+    printf("Start %s\n",__FUNCTION__);
+    NonogramInput input = NonogramInput();
+    std::vector<int> blacks;
+    /*
+    1
+    5
+    2
+    5 
+    2 1
+    2
+
+    2 1
+    1 3
+    1 2
+    3
+    4
+    1
+    */
+    blacks.clear();
+    blacks.assign({ 1});
+    input.add_x_clue(blacks);
+    blacks.clear();
+    blacks.assign({ 5});
+    input.add_x_clue(blacks);
+    blacks.clear();
+    blacks.assign({ 2});
+    input.add_x_clue(blacks);
+    blacks.clear();
+    blacks.assign({ 5});
+    input.add_x_clue(blacks);
+    blacks.clear();
+    blacks.assign({ 2,1});
+    input.add_x_clue(blacks);
+    blacks.clear();
+    blacks.assign({ 2});
+    input.add_x_clue(blacks);
+
+    blacks.clear();
+    blacks.assign({ 2,1});
+    input.add_y_clue(blacks);
+
+    blacks.clear();
+    blacks.assign({ 1,3});
+    input.add_y_clue(blacks);
+    blacks.clear();
+    blacks.assign({ 1,2});
+    input.add_y_clue(blacks);
+    blacks.clear();
+    blacks.assign({ 3});
+    input.add_y_clue(blacks);
+    blacks.clear();
+    blacks.assign({ 4});
+    input.add_y_clue(blacks);
+    blacks.clear();
+    blacks.assign({ 1});
+    input.add_y_clue(blacks);
+
+    Nonogram nonogram = Nonogram(input);
+    nonogram.print();
+    nonogram.solve();
+    assert(nonogram.is_solved());
+
+    printf("End %s\n",__FUNCTION__);
 }
 
 int main(int argc, char *argv[]) {
@@ -793,6 +859,13 @@ int main(int argc, char *argv[]) {
         cout << "Enter to continue";
         char dummy = getchar();
     }
+
+    test_NonogramInput();
+    if (argc >1) {
+        cout << "Enter to continue";
+        char dummy = getchar();
+    }
+
     test_Nonegram();
 
     string filename = string("../../puzzles/QR-code.txt");
