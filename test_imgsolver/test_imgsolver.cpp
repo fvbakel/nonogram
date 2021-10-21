@@ -61,7 +61,11 @@ void assert_clue(vector<int> *clue, vector<int> *expected_clue, string &msg) {
     if (clue->size() != expected_clue->size()) {
         correct =false;
     } else {
-
+        for (int i = 0 ; i < clue->size();i++) {
+            if (clue->at(i) != expected_clue->at(i)) {
+                correct = false;
+            }
+        }
     }
     if (!correct) {
         std::cerr << msg <<": Got: "<< vector_to_string(clue) <<" Expected " << vector_to_string(expected_clue) << "\n";
@@ -70,7 +74,7 @@ void assert_clue(vector<int> *clue, vector<int> *expected_clue, string &msg) {
 }
 
 static const char* FILENAME = "../../test_data/puzzle-30-nonogram.png";
-void test_gridfinder() {
+void test_gridfinder_1() {
     std::cout << "Start " << __FUNCTION__ << "\n";
 
     string filename = FILENAME;
@@ -78,6 +82,8 @@ void test_gridfinder() {
     GridFinder *finder = new GridFinder(&img);
 
     NonogramInput *input = finder->parse();
+    std::cout <<"input->get_nr_of_x_clues()=" <<input->get_nr_of_x_clues() << "\n";
+    std::cout <<"input->get_nr_of_y_clues()=" <<input->get_nr_of_y_clues() << "\n";
     assert(input->get_nr_of_x_clues() == 20);
     assert(input->get_nr_of_y_clues() == 20);
 
@@ -290,6 +296,33 @@ void test_gridfinder() {
     std::cout << "End " << __FUNCTION__ << "\n";
 }
 
+static const char* FILENAME_2 = "../../test_data/nonogram.org.png";
+void test_gridfinder_2() {
+    std::cout << "Start " << __FUNCTION__ << "\n";
+
+    string filename = FILENAME_2;
+    Mat img = cv::imread(filename, IMREAD_GRAYSCALE);
+    GridFinder *finder = new GridFinder(&img);
+
+    NonogramInput *input = finder->parse();
+    std::cout <<"input->get_nr_of_x_clues()=" <<input->get_nr_of_x_clues() << "\n";
+    std::cout <<"input->get_nr_of_y_clues()=" <<input->get_nr_of_y_clues() << "\n";
+    assert(input->get_nr_of_x_clues() == 25);
+    assert(input->get_nr_of_y_clues() == 25);
+
+    string msg_str;
+    vector<int> expected;
+
+    msg_str = string("get_x_clue(0): ");
+    expected.clear();
+    expected.assign({7});
+    assert_clue(input->get_x_clue(0),&expected,msg_str);
+
+    delete input;
+    delete finder;
+    std::cout << "End " << __FUNCTION__ << "\n";
+}
+
 void print_usage() {
     std::cout << "Usage:\n";
     std::cout << "test_imgsolver [-h] [-i] [-s] -f filename\n";
@@ -317,8 +350,13 @@ int main(int argc, char *argv[]) {
         test_inputimage() ;
     }
 
-    if(input.cmdOptionExists("-GridFinder") || all){
-        test_gridfinder() ;
+    if(input.cmdOptionExists("-GridFinder_1") || all){
+        test_gridfinder_1() ;
+        
+    }
+    if(input.cmdOptionExists("-GridFinder_2") || all){
+        test_gridfinder_2() ;
+        
     }
 
     return 0;

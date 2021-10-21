@@ -11,9 +11,12 @@ namespace imgsolver {
             m_gray_img = cv::Mat(*m_org_img);
         }
         cv::threshold(m_gray_img, m_bw_img,127, 255, cv::THRESH_BINARY);
+        cleanup_bw_img();
+        cv::imshow("Test", m_bw_img);
+        cv::waitKey(0);
 
         m_ocr = new tesseract::TessBaseAPI();
-        // Initialize tesseract-ocr with English, without specifying tessdata path
+        
         if (m_ocr->Init(NULL, "eng")) {
             std::cerr << "Could not initialize tesseract.\n";
             std::__throw_runtime_error("Could not initialize tesseract.");
@@ -26,13 +29,129 @@ namespace imgsolver {
         m_ocr->SetVariable("classify_bln_numeric_mode", "1");
     }
 
+    void GridFinder::cleanup_bw_img() {
+        clear_left_border();
+        clear_top_border();
+    }
+
+    void GridFinder::clear_left_border() {
+        int x = 0;
+        int threshold = m_bw_img.rows * CONSIDERED_LINE_FACTOR;
+        while (x<m_bw_img.cols) {
+            int y = 0;
+            int nr_black = 0;
+            while (y<m_bw_img.rows) {
+                if (((int) m_bw_img.at<uchar>(y,x)) == 0) {
+                    nr_black++;
+                }
+                y++;
+            }
+            if (nr_black != 0) {
+                if (nr_black > threshold) {
+                    y = 0;
+                    while (y < m_bw_img.rows) {
+                        m_bw_img.at<uchar>(y,x) = 255;
+                        y++;
+                    }
+                } else {
+                    break;
+                }
+            }
+            x++;
+        }
+    }
+
+    void GridFinder::clear_top_border() {
+        int y = 0;
+        int threshold = m_bw_img.cols * CONSIDERED_LINE_FACTOR;
+        while (y<m_bw_img.rows) {
+            int x = 0;
+            int nr_black = 0;
+            while (x<m_bw_img.cols) {
+                if (((int) m_bw_img.at<uchar>(y,x)) == 0) {
+                    nr_black++;
+                }
+                x++;
+            }
+            if (nr_black != 0) {
+                if (nr_black > threshold) {
+                    x = 0;
+                    while (x < m_bw_img.cols) {
+                        m_bw_img.at<uchar>(y,x) = 255;
+                        x++;
+                    }
+                } else {
+                    break;
+                }
+            }
+            y++;
+        }
+    }
+
+    void GridFinder::determine_offsets() {
+        int x = m_bw_img.cols / 2;
+        int x_2 = x + 7;
+        int x_3 = x + 17;
+        int y = m_bw_img.rows -1;
+        bool first_black_found = false;
+        while (m_y_bottom_offset == UNDEFINED && y > 0) {
+            if (    ((int) m_bw_img.at<uchar>(y,x))   == 0 ||
+                    ((int) m_bw_img.at<uchar>(y,x_2)) == 0 ||
+                    ((int) m_bw_img.at<uchar>(y,x_3)) == 0
+            ) {
+                first_black_found = true;
+            } 
+            if (    first_black_found && (
+                        ((int) m_bw_img.at<uchar>(y,x))   != 0 ||
+                        ((int) m_bw_img.at<uchar>(y,x_2)) != 0 ||
+                        ((int) m_bw_img.at<uchar>(y,x_3)) != 0
+                    )
+            ) {
+                m_y_bottom_offset = y;
+            }
+            y--;
+        }
+
+        x = m_bw_img.cols -1;
+        y = m_bw_img.rows / 2;
+        int y_2 = y + 7;
+        int y_3 = y + 17;
+        first_black_found = false;
+        while (m_x_right_offset == UNDEFINED && x > 0) {
+            if (    ((int) m_bw_img.at<uchar>(y,x))   == 0 ||
+                    ((int) m_bw_img.at<uchar>(y_2,x)) == 0 ||
+                    ((int) m_bw_img.at<uchar>(y_3,x)) == 0
+            ) {
+                first_black_found = true;
+            } 
+            if (    first_black_found && (
+                        ((int) m_bw_img.at<uchar>(y,x))   != 0 ||
+                        ((int) m_bw_img.at<uchar>(y_2,x)) != 0 ||
+                        ((int) m_bw_img.at<uchar>(y_3,x)) != 0
+                    )
+            ) {
+                m_x_right_offset = x;
+            }
+            
+            x--;
+        }
+        if (m_x_right_offset == UNDEFINED) {
+            std::__throw_domain_error("Unable to determine x right offset!");
+        }
+        if (m_y_bottom_offset == UNDEFINED) {
+            std::__throw_domain_error("Unable to determine y bottom offset!");
+        }
+        //std::cout << "Using m_x_right_offset = " << m_x_right_offset << "\n";
+        //std::cout << "Using m_y_bottom_offset = " << m_y_bottom_offset << "\n";
+    }
+
     void GridFinder::determine_x_lines() {
-        int y = m_search_offset;
+        int y = m_y_bottom_offset;
         int x = m_search_offset;
 
         bool last_was_black = false;
         int line_thickness = 0;
-        for (x = m_search_offset ;x < m_bw_img.cols;x++) {
+        for (x = m_search_offset ;x < m_x_right_offset+2;x++) {
             // std::cout << x << ","<< y << "=" << ((int) m_bw_img.at<uchar>(x,y)) << "\n";
             if (((int) m_bw_img.at<uchar>(y,x)) == 0) {
                 if (last_was_black) {
@@ -53,11 +172,11 @@ namespace imgsolver {
 
     void GridFinder::determine_y_lines() {
         int y = m_search_offset;
-        int x = m_search_offset;
+        int x = m_x_right_offset;
 
         bool last_was_black = false;
         int line_thickness = 0;
-        for (y = m_search_offset ;y < m_bw_img.rows;y++) {
+        for (y = m_search_offset ;y < m_y_bottom_offset+2;y++) {
            // std::cout << x << ","<< y << "=" << ((int) m_bw_img.at<uchar>(x,y)) << "\n";
             if (((int) m_bw_img.at<uchar>(y,x)) == 0) {
                 if (last_was_black) {
@@ -301,7 +420,7 @@ namespace imgsolver {
         int result = -1;
         m_ocr->SetImage(image.data, image.cols, image.rows, image.channels() , image.step);
         detected_text = std::string(m_ocr->GetUTF8Text());
-        //std::cout << "INFO: Found int as string:[" <<detected_text << "]\n";
+    //    std::cout << "INFO: Found int as string:[" <<detected_text << "]\n";
         detected_text.erase(std::remove(detected_text.begin(), detected_text.end(), '\n'), detected_text.end());
         char *p;
         int value = (int) strtol(detected_text.c_str(),&p,10);
@@ -313,8 +432,8 @@ namespace imgsolver {
             }
         }
 
-       // cv::imshow("Test", image);
-       // cv::waitKey(0);
+   //     cv::imshow("Test", image);
+   //     cv::waitKey(0);
 
         return result;
     }
@@ -337,6 +456,7 @@ namespace imgsolver {
     }
 
     NonogramInput* GridFinder::parse() {
+        determine_offsets();
         determine_x_lines();
         determine_y_lines();
         process_y_clues(true);
