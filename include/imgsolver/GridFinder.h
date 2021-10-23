@@ -7,8 +7,9 @@
 
 namespace imgsolver {
     static const cv::Scalar WHITE_SCALAR = cv::Scalar(255,255,255);
-    static const int    UNDEFINED = -2;
-    static const float  CONSIDERED_LINE_FACTOR = 0.5;
+    static const int    UNDEFINED               = -2;
+    static const int    BORDER_SIZE             = 5;
+    static const float  CONSIDERED_LINE_FACTOR  = 0.5;
     // 40% larger gab than the smallest gab is still considered the same number
     // TODO: make this a member variable that can be set?
     static const float Y_CLUE_GAB_FACTOR = 1.4;
@@ -18,6 +19,8 @@ namespace imgsolver {
             cv::Mat    *m_org_img;
             cv::Mat     m_gray_img;
             cv::Mat     m_bw_img;
+            cv::Mat     m_tmp_org_subset;
+            cv::Mat     m_tmp_bw_subset;
 
             tesseract::TessBaseAPI *m_ocr = nullptr;
 
@@ -48,6 +51,7 @@ namespace imgsolver {
 
             void parse_x_clue_column(cv::Rect  &rect);
             void parse_y_clue_line(cv::Rect  &rect);
+            void extract_clue(cv::Rect &rect_clue, cv::Mat &result);
             cv::Rect bounding_box(cv::Mat &image);
             int  parse_one_number(cv::Mat &image);
 
