@@ -1,7 +1,7 @@
 #!/bin/sh
 
 solver=~/bin/nonogram
-
+export TESSDATA_PREFIX=/home/fvbakel/git/tessdata_best
 if [ -n "$1" ]; then
   echo "Processing directory: $1"
   process_dir=$1

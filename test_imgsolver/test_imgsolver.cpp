@@ -386,7 +386,73 @@ void test_gridfinder_2() {
         assert_clue(input->get_y_clue(i),&y_expected[i],msg_str);
     }
 
+    delete input;
+    delete finder;
+    std::cout << "End " << __FUNCTION__ << "\n";
+}
+
+static const char* FILENAME_3 = "../../test_data/tiny.png";
+void test_gridfinder_3() {
+    std::cout << "Start " << __FUNCTION__ << "\n";
+
+    string filename = FILENAME_3;
+    Mat img = cv::imread(filename, IMREAD_GRAYSCALE);
+    GridFinder *finder = new GridFinder(&img);
+
+    NonogramInput *input = finder->parse();
+    std::cout <<"input->get_nr_of_x_clues()=" <<input->get_nr_of_x_clues() << "\n";
+    std::cout <<"input->get_nr_of_y_clues()=" <<input->get_nr_of_y_clues() << "\n";
+    assert(input->get_nr_of_x_clues() == 9);
+    assert(input->get_nr_of_y_clues() == 17);
+
+    vector<vector<int>> x_expected;
+    x_expected.push_back({16});
+    x_expected.push_back({2,1,1,1,1,1,1,1});
+    x_expected.push_back({1,14});
+    x_expected.push_back({1,2});
+    x_expected.push_back({1,2});
     
+    x_expected.push_back({1,2});
+    x_expected.push_back({2,2});
+    x_expected.push_back({2,1});
+    x_expected.push_back({4});
+    
+
+    vector<vector<int>> y_expected;
+    y_expected.push_back({6});
+    y_expected.push_back({2,2});
+    y_expected.push_back({1,2,2});
+    y_expected.push_back({1,4,1});
+    y_expected.push_back({3,2,1});
+
+    y_expected.push_back({1,1,3});
+    y_expected.push_back({3});
+    y_expected.push_back({1,1});
+    y_expected.push_back({3});
+    y_expected.push_back({1,1});
+
+    y_expected.push_back({3});
+    y_expected.push_back({1,1});
+    y_expected.push_back({3});
+    y_expected.push_back({1,1});
+    y_expected.push_back({3});
+
+    y_expected.push_back({1,1});
+    y_expected.push_back({3});
+
+    for (int i = 0 ; i<x_expected.size();i++) {
+        stringstream msg_stream;
+        msg_stream << "get_x_clue: " << i <<": ";
+        string msg_str = msg_stream.str();
+        assert_clue(input->get_x_clue(i),&x_expected[i],msg_str);
+    }
+
+    for (int i = 0 ; i<y_expected.size();i++) {
+        stringstream msg_stream;
+        msg_stream << "get_y_clue: " << i <<": ";
+        string msg_str = msg_stream.str();
+        assert_clue(input->get_y_clue(i),&y_expected[i],msg_str);
+    }
 
     delete input;
     delete finder;
@@ -400,7 +466,9 @@ void print_usage() {
     std::cout << "  -h            Display this help text\n";
     std::cout << "  -a            Run all tests\n";
     std::cout << "  -InputImg     Run ImgInput test\n";
-    std::cout << "  -GridFinder   Run ImgInput test\n";
+    std::cout << "  -GridFinder_1 Run GridFinder_1 test\n";
+    std::cout << "  -GridFinder_2 Run GridFinder_2 test\n";
+    std::cout << "  -GridFinder_3 Run GridFinder_3 test\n";
 }
 
 int main(int argc, char *argv[]) {
@@ -422,11 +490,12 @@ int main(int argc, char *argv[]) {
 
     if(input.cmdOptionExists("-GridFinder_1") || all){
         test_gridfinder_1() ;
-        
     }
     if(input.cmdOptionExists("-GridFinder_2") || all){
         test_gridfinder_2() ;
-        
+    }
+    if(input.cmdOptionExists("-GridFinder_3") || all){
+        test_gridfinder_3() ;
     }
 
     return 0;

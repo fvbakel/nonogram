@@ -225,7 +225,7 @@ bool Nonogram::is_input_valid() {
         int y_black_sum =get_colored_size_sum(y_dir,black);
 
         if (x_black_sum != y_black_sum) {
-            printf("Invalid input, total nr of black (%d) in horizontal does march vertical(%d).\n",
+            printf("Invalid input, total nr of black (%d) in horizontal does not match vertical(%d).\n",
                 x_black_sum,y_black_sum);
             sum_valid = false;
         }

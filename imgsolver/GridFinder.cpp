@@ -12,6 +12,8 @@ namespace imgsolver {
         }
         cv::threshold(m_gray_img, m_bw_img,127, 255, cv::THRESH_BINARY);
         cleanup_bw_img();
+       // cv::imshow("Test",m_bw_img);
+      //  cv::waitKey(0);
 
         m_ocr = new tesseract::TessBaseAPI();
         
@@ -283,6 +285,13 @@ namespace imgsolver {
                         m_smallest_y_clue_gab = nr_with_white_only;
                         m_y_clue_gab = ceil(m_smallest_y_clue_gab * Y_CLUE_GAB_FACTOR);
                     }
+                    if (    nr_with_white_only > 0 &&
+                            (   nr_with_white_only > m_largest_y_clue_gab || 
+                                m_largest_y_clue_gab == UNDEFINED
+                            )
+                    ) {
+                        m_largest_y_clue_gab = nr_with_white_only;
+                    }
                     gab_start = false;
                 }
 
@@ -295,6 +304,13 @@ namespace imgsolver {
                 previous_black = false;
                 nr_with_white_only++;
             }
+        }
+    }
+
+    void GridFinder::check_y_clue_gab() {
+        if (m_largest_y_clue_gab < m_y_clue_gab ) {
+            // there are no double numbers?
+            m_y_clue_gab = m_smallest_y_clue_gab ;
         }
     }
 
@@ -433,7 +449,7 @@ namespace imgsolver {
                 result = value;
             }
         }
-        debug_save_image(image);
+        //debug_save_image(image);
 
         return result;
     }
@@ -458,6 +474,7 @@ namespace imgsolver {
         determine_x_lines();
         determine_y_lines();
         process_y_clues(true);
+        check_y_clue_gab();
 
         process_x_clues();
         process_y_clues();

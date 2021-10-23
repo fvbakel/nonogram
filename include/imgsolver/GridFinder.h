@@ -32,11 +32,12 @@ namespace imgsolver {
             std::vector<int> m_y_thickness;
 
             int m_search_offset = 20;
-            int m_x_right_offset      = UNDEFINED;
-            int m_y_bottom_offset      = UNDEFINED;
+            int m_x_right_offset        = UNDEFINED;
+            int m_y_bottom_offset       = UNDEFINED;
 
-            int m_smallest_y_clue_gab = UNDEFINED;
-            int m_y_clue_gab = UNDEFINED;
+            int m_smallest_y_clue_gab   = UNDEFINED;
+            int m_largest_y_clue_gab    = UNDEFINED;
+            int m_y_clue_gab            = UNDEFINED;
 
             void cleanup_bw_img();
             void clear_left_border();
@@ -47,7 +48,8 @@ namespace imgsolver {
             void process_x_clues();
             void process_y_clues(bool determine_y_clue_gab = false);
             
-            void  update_y_clue_gab(cv::Rect  &rect);
+            void update_y_clue_gab(cv::Rect  &rect);
+            void check_y_clue_gab();
 
             void parse_x_clue_column(cv::Rect  &rect);
             void parse_y_clue_line(cv::Rect  &rect);
