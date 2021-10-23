@@ -310,13 +310,83 @@ void test_gridfinder_2() {
     assert(input->get_nr_of_x_clues() == 25);
     assert(input->get_nr_of_y_clues() == 25);
 
-    string msg_str;
-    vector<int> expected;
+    vector<vector<int>> x_expected;
+    x_expected.push_back({7});
+    x_expected.push_back({11});
+    x_expected.push_back({5});
+    x_expected.push_back({5,6});
+    x_expected.push_back({3,1,11});
 
-    msg_str = string("get_x_clue(0): ");
-    expected.clear();
-    expected.assign({7});
-    assert_clue(input->get_x_clue(0),&expected,msg_str);
+    x_expected.push_back({6,6,2});
+    x_expected.push_back({3,2,4,9});
+    x_expected.push_back({2,2,4,9});
+    x_expected.push_back({1,1,4,4,5});
+    x_expected.push_back({2,4,7,3});
+
+    x_expected.push_back({5,9,1});
+    x_expected.push_back({5,6,1,1});
+    x_expected.push_back({4,7,2});
+    x_expected.push_back({5,4,3});
+    x_expected.push_back({5,1,3,9});
+
+    x_expected.push_back({3,1,1,13});
+    x_expected.push_back({3,1,12,4});
+    x_expected.push_back({1,3,2,5,2,4});
+    x_expected.push_back({1,4,4,2,3});
+    x_expected.push_back({7,5,2,3});
+
+    x_expected.push_back({1,9,2,1,2});
+    x_expected.push_back({11,2});
+    x_expected.push_back({2,3,4});
+    x_expected.push_back({2,1,2});
+    x_expected.push_back({2});
+
+    vector<vector<int>> y_expected;
+    y_expected.push_back({3,2,2});
+    y_expected.push_back({6,5,1});
+    y_expected.push_back({3,12});
+    y_expected.push_back({2,2,10});
+    y_expected.push_back({1,3,6,5});
+
+    y_expected.push_back({1,2,4,4});
+    y_expected.push_back({2,4,3,4});
+    y_expected.push_back({4,4,2,4});
+    y_expected.push_back({3,4,4,3,2});
+    y_expected.push_back({3,4,6,2,3});
+
+    y_expected.push_back({3,3,9,3});
+    y_expected.push_back({2,2,15});
+    y_expected.push_back({2,3,5,9});
+    y_expected.push_back({2,3,3,1,6,4});
+    y_expected.push_back({2,2,2,2,5,2,1});
+
+    y_expected.push_back({2,2,2,2,4,2,1});
+    y_expected.push_back({1,2,2,1,3,1});
+    y_expected.push_back({1,2,3,1,3,3});
+    y_expected.push_back({1,4,6,4});
+    y_expected.push_back({16,1});
+
+    y_expected.push_back({5,3,2});
+    y_expected.push_back({3,4});
+    y_expected.push_back({2,6});
+    y_expected.push_back({5});
+    y_expected.push_back({4});
+
+    for (int i = 0 ; i<x_expected.size();i++) {
+        stringstream msg_stream;
+        msg_stream << "get_x_clue: " << i <<": ";
+        string msg_str = msg_stream.str();
+        assert_clue(input->get_x_clue(i),&x_expected[i],msg_str);
+    }
+
+    for (int i = 0 ; i<y_expected.size();i++) {
+        stringstream msg_stream;
+        msg_stream << "get_y_clue: " << i <<": ";
+        string msg_str = msg_stream.str();
+        assert_clue(input->get_y_clue(i),&y_expected[i],msg_str);
+    }
+
+    
 
     delete input;
     delete finder;

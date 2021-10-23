@@ -12,12 +12,16 @@ namespace imgsolver {
         }
         cv::threshold(m_gray_img, m_bw_img,127, 255, cv::THRESH_BINARY);
         cleanup_bw_img();
-        cv::imshow("Test", m_bw_img);
-        cv::waitKey(0);
+        //cv::imshow("Test", m_bw_img);
+        //cv::waitKey(0);
 
         m_ocr = new tesseract::TessBaseAPI();
         
-        if (m_ocr->Init(NULL, "eng")) {
+        // TODO: improve here
+        //tesseract::GenericVector<STRING> languages;
+        //m_ocr->GetAvailableLanguagesAsVector(languages);
+        // export TESSDATA_PREFIX=/home/fvbakel/git/tessdata_best
+        if (m_ocr->Init(NULL, "nono-model")) {
             std::cerr << "Could not initialize tesseract.\n";
             std::__throw_runtime_error("Could not initialize tesseract.");
         }
@@ -233,12 +237,14 @@ namespace imgsolver {
 
             if ( !black_found && start_y != 0) {
                 int height = y - start_y;
-                
+                // TODO: improve code duplication below
                 cv::Rect rect_clue(0, start_y, bw_subset.cols, height);
                 cv::Mat clue = (org_subset)(rect_clue);
-                cv::Mat cropped = clue(bounding_box(clue));
+                cv::Mat bw_clue = (bw_subset)(rect_clue);
+                cv::Mat cropped = clue(bounding_box(bw_clue));
                 cv::Mat border;
                 int border_size = 5;
+                debug_save_image(cropped);
                 cv::copyMakeBorder(cropped,border,border_size,border_size,0,border_size,cv::BORDER_CONSTANT,WHITE_SCALAR);
                 int value = parse_one_number(border);
                 if (value > 0) {
@@ -395,9 +401,11 @@ namespace imgsolver {
                 int width = x - start_x;
                 cv::Rect rect_clue(start_x, 0, width, bw_subset.rows);
                 cv::Mat clue = (org_subset)(rect_clue);
-                cv::Mat cropped = clue(bounding_box(clue));
+                cv::Mat bw_clue = (bw_subset)(rect_clue);
+                cv::Mat cropped = clue(bounding_box(bw_clue));
                 cv::Mat border;
                 int border_size = 5;
+                debug_save_image(cropped);
                 cv::copyMakeBorder(cropped,border,border_size,border_size,0,border_size,cv::BORDER_CONSTANT,WHITE_SCALAR);
                 int value = parse_one_number(border);
                 if (value > 0) {
@@ -431,9 +439,10 @@ namespace imgsolver {
                 result = value;
             }
         }
+        debug_save_image(image);
 
-   //     cv::imshow("Test", image);
-   //     cv::waitKey(0);
+        //cv::imshow("Test", image);
+        //cv::waitKey(0);
 
         return result;
     }
@@ -468,6 +477,13 @@ namespace imgsolver {
         //cv::imshow("Test", m_bw_img);
         //cv::waitKey(0);
         //imwrite("/tmp/test.png", m_bw_img);
+    }
+
+    void GridFinder::debug_save_image(cv::Mat &image) {
+        stringstream filename;
+        filename << "/tmp/nono_" << m_debug_file_nr << ".png";
+        cv::imwrite(filename.str() ,image);
+        m_debug_file_nr++;
     }
 
     GridFinder::~GridFinder() {

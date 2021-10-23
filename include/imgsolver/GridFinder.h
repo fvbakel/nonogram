@@ -51,6 +51,9 @@ namespace imgsolver {
             cv::Rect bounding_box(cv::Mat &image);
             int  parse_one_number(cv::Mat &image);
 
+            int m_debug_file_nr = 300;
+            void debug_save_image(cv::Mat &image);
+
         public:
             GridFinder(cv::Mat *img);
             ~GridFinder();
