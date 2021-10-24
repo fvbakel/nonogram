@@ -62,6 +62,8 @@ namespace imgsolver {
             }
             x++;
         }
+
+        m_x_left_offset = x;
     }
 
     void GridFinder::clear_top_border() {
@@ -89,6 +91,53 @@ namespace imgsolver {
             }
             y++;
         }
+    }
+
+    void GridFinder::determine_fixed_width() {
+        cv::Mat dark_bw_img;
+        cv::threshold(m_gray_img, dark_bw_img,254, 255, cv::THRESH_BINARY);
+
+        // get rectangle of first y clue
+       // int width = m_x_lines[0] - m_x_left_offset;
+        int x = m_x_left_offset;
+        int y = m_y_lines[0] + m_y_thickness[0];
+        //int height = m_y_lines[1] - y;
+     //   int height = 1;
+        //cv::Rect rect(x, y, width, height);
+        //cv::Mat tmp_subset = dark_bw_img(rect);
+        //std::string tmp = std::string("fixed");
+        //debug_save_image(tmp,tmp_subset);
+        bool last_was_black = false;
+        while ( x < m_x_lines[0] ) {
+            if (((int) dark_bw_img.at<uchar>(y,x))   == 0) {
+                if (last_was_black) {
+                    m_y_clue_line_thickness++;    
+                } else {
+                    if (m_y_clue_line_thickness == UNDEFINED) {
+                        m_y_clue_line_thickness = 1;
+                        m_y_clue_width = 0;
+                    } else {
+                        m_has_fixed_y_width = true;
+                        break;
+                    }
+                }
+                last_was_black =true;
+            } else {
+                m_y_clue_width++;
+                last_was_black =false;
+            }
+            x++;
+        }
+        /*
+        if (m_has_fixed_y_width) {
+            std::cout << "Found fixed y clue width:" << m_y_clue_width << "\n";
+            std::cout << "Found fixed y clue thickness:" << m_y_clue_line_thickness << "\n";
+        } else {
+            std::cout << "Not found fixed y clue width:" << m_y_clue_width << "\n";
+            std::cout << "Not found fixed y clue thickness:" << m_y_clue_line_thickness << "\n";
+        }
+        */
+        
     }
 
     void GridFinder::determine_offsets() {
@@ -235,10 +284,11 @@ namespace imgsolver {
                 int height = y - start_y;
                 cv::Rect rect_clue(0, start_y, m_tmp_bw_subset.cols, height);
                 cv::Mat clue;
-                extract_clue(rect_clue,clue);
-                int value = parse_one_number(clue);
-                if (value > 0) {
-                    blacks.push_back(value);
+                if (extract_clue(rect_clue,clue)) {
+                    int value = parse_one_number(clue);
+                    if (value > 0) {
+                        blacks.push_back(value);
+                    }
                 }
                 //reset search
                 start_y = 0;
@@ -247,12 +297,18 @@ namespace imgsolver {
         m_output->add_x_clue(blacks);
     }
 
-    void GridFinder::extract_clue(cv::Rect &rect_clue, cv::Mat &result) {
+    bool GridFinder::extract_clue(cv::Rect &rect_clue, cv::Mat &result) {
         cv::Mat clue = m_tmp_org_subset(rect_clue);
         cv::Mat bw_clue = m_tmp_bw_subset(rect_clue);
-        cv::Mat cropped = clue(bounding_box(bw_clue));
-        int border_size = BORDER_SIZE;
-        cv::copyMakeBorder(cropped,result,border_size,border_size,0,border_size,cv::BORDER_CONSTANT,WHITE_SCALAR);
+        cv::Rect bounding_box_rect;
+        if (bounding_box(bw_clue,bounding_box_rect)) {
+            cv::Mat cropped = clue(bounding_box_rect);
+            int border_size = BORDER_SIZE;
+            cv::copyMakeBorder(cropped,result,border_size,border_size,0,border_size,cv::BORDER_CONSTANT,WHITE_SCALAR);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /*
@@ -317,17 +373,19 @@ namespace imgsolver {
     /*
     Given a number remove the white space on all sides
     */
-    cv::Rect GridFinder::bounding_box(cv::Mat &image) {
+    bool GridFinder::bounding_box(cv::Mat &image, cv::Rect &result) {
         int start_x =0;
         int start_y =0;
         int end_x = image.cols;
         int end_y = image.rows;
 
+        bool found_at_least_one_black = false;
         for (int x = 0; x < image.cols;x++) {
             bool black_found = false;
             for (int y = 0; y < image.rows;y++) {
                 if (((int) image.at<uchar>(y,x)) == 0) {
                     black_found = true;
+                    found_at_least_one_black = true;
                     break;
                 }
             }
@@ -375,26 +433,56 @@ namespace imgsolver {
                 break;
             }
         }
-
+        // TODO: improve below ...
         int width  = end_x - start_x;
         int height = end_y - start_y;
-        cv::Rect rect(start_x, start_y, width, height);
-        return rect;
+        result.x=start_x;
+        result.y=start_y;
+        result.width=width;
+        result.height=height;
+        //cv::Rect rect(start_x, start_y, width, height);
+        //result = rect;
+        return found_at_least_one_black;
     }
     
-    /*
-    Given a horizontal oriented rectangle of the original image with 
-    a sequence of one or more numbers seperated by a space.
-    This functions will add this as a y clue to the output
-    */
     void GridFinder::parse_y_clue_line(cv::Rect  &rect) {
         m_tmp_org_subset = (*m_org_img)(rect);
         m_tmp_bw_subset = m_bw_img(rect);
+        if (m_has_fixed_y_width) {
+            parse_y_clue_line_fixed_width();
+        } else {
+            parse_y_clue_line_gab_separated();
+        }
+    }
+
+    void GridFinder::parse_y_clue_line_fixed_width() {
+        std::vector<int> blacks;
+        int x = m_x_left_offset;
+        while (x < m_x_lines[0]) {
+            cv::Rect rect_clue(x, 0, m_y_clue_width, m_tmp_bw_subset.rows);
+            cv::Mat clue;
+            if (extract_clue(rect_clue,clue)) {
+                int value = parse_one_number(clue);
+                if (value > 0) {
+                    blacks.push_back(value);
+                }
+            }
+            x = x + m_y_clue_line_thickness + m_y_clue_width;
+        }
+        m_output->add_y_clue(blacks);
+    }
+
+    /*
+    Given a horizontal oriented rectangle of the original image with 
+    a sequence of one or more numbers seperated by a space 
+    This functions will add this as a y clue to the output
+    */
+    void GridFinder::parse_y_clue_line_gab_separated() {
         int start_x = 0;
         int nr_with_black = 0;
         int nr_with_white_only = 0;
         std::vector<int> blacks;
-        for (int x = 0; x < m_tmp_bw_subset.cols;x++) {
+        for (int x = m_x_left_offset; x < m_tmp_bw_subset.cols;x++) {
             bool black_found = false;
             for (int y = 0; y < m_tmp_bw_subset.rows;y++) {
                 if (((int) m_tmp_bw_subset.at<uchar>(y,x)) == 0) {
@@ -417,10 +505,11 @@ namespace imgsolver {
                 int width = x - start_x;
                 cv::Rect rect_clue(start_x, 0, width, m_tmp_bw_subset.rows);
                 cv::Mat clue;
-                extract_clue(rect_clue,clue);
-                int value = parse_one_number(clue);
-                if (value > 0) {
-                    blacks.push_back(value);
+                if (extract_clue(rect_clue,clue)) {
+                    int value = parse_one_number(clue);
+                    if (value > 0) {
+                        blacks.push_back(value);
+                    }
                 }
                 //reset search
                 start_x = 0;
@@ -449,7 +538,10 @@ namespace imgsolver {
                 result = value;
             }
         }
-        //debug_save_image(image);
+       // cv::imshow("Test",image);
+       // cv::waitKey(0);
+
+        debug_save_image(detected_text,image);
 
         return result;
     }
@@ -473,8 +565,11 @@ namespace imgsolver {
         determine_offsets();
         determine_x_lines();
         determine_y_lines();
-        process_y_clues(true);
-        check_y_clue_gab();
+        determine_fixed_width();
+        if (!m_has_fixed_y_width) {
+            process_y_clues(true);
+            check_y_clue_gab();
+        }
 
         process_x_clues();
         process_y_clues();
@@ -482,9 +577,9 @@ namespace imgsolver {
         return m_output;
     }
 
-    void GridFinder::debug_save_image(cv::Mat &image) {
+    void GridFinder::debug_save_image(std::string &prefix,cv::Mat &image) {
         stringstream filename;
-        filename << "/tmp/nono_" << m_debug_file_nr << ".png";
+        filename << "/tmp/F_" << prefix << "_" << m_debug_file_nr << ".png";
         cv::imwrite(filename.str() ,image);
         m_debug_file_nr++;
     }

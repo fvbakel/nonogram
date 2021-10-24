@@ -31,17 +31,23 @@ namespace imgsolver {
             std::vector<int> m_y_lines;
             std::vector<int> m_y_thickness;
 
-            int m_search_offset = 20;
+            int m_search_offset         = 20;
             int m_x_right_offset        = UNDEFINED;
+            int m_x_left_offset         = 0;
             int m_y_bottom_offset       = UNDEFINED;
 
             int m_smallest_y_clue_gab   = UNDEFINED;
             int m_largest_y_clue_gab    = UNDEFINED;
             int m_y_clue_gab            = UNDEFINED;
 
+            bool m_has_fixed_y_width    = false;
+            int  m_y_clue_width         = UNDEFINED;
+            int  m_y_clue_line_thickness= UNDEFINED;
+
             void cleanup_bw_img();
             void clear_left_border();
             void clear_top_border();
+            void determine_fixed_width();
             void determine_offsets();
             void determine_x_lines();
             void determine_y_lines();
@@ -53,12 +59,14 @@ namespace imgsolver {
 
             void parse_x_clue_column(cv::Rect  &rect);
             void parse_y_clue_line(cv::Rect  &rect);
-            void extract_clue(cv::Rect &rect_clue, cv::Mat &result);
-            cv::Rect bounding_box(cv::Mat &image);
+            void parse_y_clue_line_fixed_width();
+            void parse_y_clue_line_gab_separated();
+            bool extract_clue(cv::Rect &rect_clue, cv::Mat &result);
+            bool bounding_box(cv::Mat &image, cv::Rect &result);
             int  parse_one_number(cv::Mat &image);
 
             int m_debug_file_nr = 300;
-            void debug_save_image(cv::Mat &image);
+            void debug_save_image(std::string &prefix,cv::Mat &image);
 
         public:
             GridFinder(cv::Mat *img);

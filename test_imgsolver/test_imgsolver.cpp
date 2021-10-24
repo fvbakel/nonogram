@@ -459,6 +459,28 @@ void test_gridfinder_3() {
     std::cout << "End " << __FUNCTION__ << "\n";
 }
 
+static const char* FILENAME_4 = "../../test_data/nonogram_48286.png";
+void test_gridfinder_4() {
+    std::cout << "Start " << __FUNCTION__ << "\n";
+
+    string filename = FILENAME_4;
+    Mat img = cv::imread(filename, IMREAD_GRAYSCALE);
+    GridFinder *finder = new GridFinder(&img);
+
+    NonogramInput *input = finder->parse();
+    std::cout <<"input->get_nr_of_x_clues()=" <<input->get_nr_of_x_clues() << "\n";
+    std::cout <<"input->get_nr_of_y_clues()=" <<input->get_nr_of_y_clues() << "\n";
+    assert(input->get_nr_of_x_clues() == 45);
+    assert(input->get_nr_of_y_clues() == 45);
+
+    Nonogram nonogram = Nonogram(*input);
+    assert(nonogram.is_input_valid());
+
+    delete input;
+    delete finder;
+    std::cout << "End " << __FUNCTION__ << "\n";
+}
+
 void print_usage() {
     std::cout << "Usage:\n";
     std::cout << "test_imgsolver [-h] [-i] [-s] -f filename\n";
@@ -469,6 +491,7 @@ void print_usage() {
     std::cout << "  -GridFinder_1 Run GridFinder_1 test\n";
     std::cout << "  -GridFinder_2 Run GridFinder_2 test\n";
     std::cout << "  -GridFinder_3 Run GridFinder_3 test\n";
+    std::cout << "  -GridFinder_4 Run GridFinder_3 test\n";
 }
 
 int main(int argc, char *argv[]) {
@@ -496,6 +519,9 @@ int main(int argc, char *argv[]) {
     }
     if(input.cmdOptionExists("-GridFinder_3") || all){
         test_gridfinder_3() ;
+    }
+    if(input.cmdOptionExists("-GridFinder_4") || all){
+        test_gridfinder_4() ;
     }
 
     return 0;
