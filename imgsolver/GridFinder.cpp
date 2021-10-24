@@ -302,7 +302,7 @@ namespace imgsolver {
         cv::Mat bw_clue = m_tmp_bw_subset(rect_clue);
         cv::Rect bounding_box_rect;
         if (bounding_box(bw_clue,bounding_box_rect)) {
-            cv::Mat cropped = clue(bounding_box_rect);
+            cv::Mat cropped = clue(bounding_box_rect).clone();
             int border_size = BORDER_SIZE;
             cv::copyMakeBorder(cropped,result,border_size,border_size,0,border_size,cv::BORDER_CONSTANT,WHITE_SCALAR);
             return true;
@@ -379,6 +379,7 @@ namespace imgsolver {
         int end_x = image.cols;
         int end_y = image.rows;
 
+        // left
         bool found_at_least_one_black = false;
         for (int x = 0; x < image.cols;x++) {
             bool black_found = false;
@@ -394,6 +395,7 @@ namespace imgsolver {
                 break;
             }
         }
+        // right
         for (int x = (image.cols-1); x > start_x;x--) {
             bool black_found = false;
             for (int y = 0; y < image.rows;y++) {
@@ -407,6 +409,7 @@ namespace imgsolver {
                 break;
             }
         }
+        // top
         for (int y = 0; y < image.rows;y++) {
             bool black_found = false;
             for (int x = 0; x < image.cols;x++) {
@@ -420,6 +423,7 @@ namespace imgsolver {
                 break;
             }
         }
+        // bottom
         for (int y = (image.rows -1); y > start_y ;y--) {
             bool black_found = false;
             for (int x = 0; x < image.cols;x++) {
@@ -434,8 +438,8 @@ namespace imgsolver {
             }
         }
         // TODO: improve below ...
-        int width  = end_x - start_x;
-        int height = end_y - start_y;
+        int width  = end_x - start_x + 1;
+        int height = end_y - start_y + 1;
         result.x=start_x;
         result.y=start_y;
         result.width=width;
@@ -541,7 +545,7 @@ namespace imgsolver {
        // cv::imshow("Test",image);
        // cv::waitKey(0);
 
-        debug_save_image(detected_text,image);
+       // debug_save_image(detected_text,image);
 
         return result;
     }
