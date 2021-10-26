@@ -2,7 +2,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
-#include <imgsolver/InputImage.h>
+
 #include <imgsolver/GridFinder.h>
 #include <solvercore/Nonogram.h>
 
@@ -34,15 +34,6 @@ class InputParser{
     private:
         std::vector <std::string> tokens;
 };
-
-
-
-void test_inputimage() {
-    std::cout << "Start " << __FUNCTION__ << "\n";
-    
-    std::cout << "End " << __FUNCTION__ << "\n";
-}
-
 
 std::string vector_to_string(vector<int> *vect){
     std::stringstream str_str;
@@ -483,11 +474,10 @@ void test_gridfinder_4() {
 
 void print_usage() {
     std::cout << "Usage:\n";
-    std::cout << "test_imgsolver [-h] [-i] [-s] -f filename\n";
+    std::cout << "test_imgsolver\n";
     std::cout << "  Optional:\n";
     std::cout << "  -h            Display this help text\n";
     std::cout << "  -a            Run all tests\n";
-    std::cout << "  -InputImg     Run ImgInput test\n";
     std::cout << "  -GridFinder_1 Run GridFinder_1 test\n";
     std::cout << "  -GridFinder_2 Run GridFinder_2 test\n";
     std::cout << "  -GridFinder_3 Run GridFinder_3 test\n";
@@ -505,10 +495,6 @@ int main(int argc, char *argv[]) {
     bool all =false;
     if(input.cmdOptionExists("-a")){
         all = true;
-    }
-
-    if(input.cmdOptionExists("-InputImg") || all){
-        test_inputimage() ;
     }
 
     if(input.cmdOptionExists("-GridFinder_1") || all){

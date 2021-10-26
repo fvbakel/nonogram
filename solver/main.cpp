@@ -3,12 +3,15 @@
 #include <assert.h>
 #include <algorithm>
 #include <iostream>
+#include <chrono>
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core/types_c.h>
 
 #include <imgsolver/GridFinder.h>
 #include <solvercore/Nonogram.h>
+
+
 
 class InputParser{
     public:
@@ -87,7 +90,8 @@ bool hasEnding (std::string const &fullString, std::string const &ending) {
 
 void process_file ( string &filename, 
                     bool rule_improve_log = false,
-                    bool dispay = false
+                    bool dispay = false,
+                    bool dump_images =false
 ) {
     printf("Start processing: %s\n",filename.c_str());
     Nonogram *nonogram = nullptr;
@@ -95,8 +99,14 @@ void process_file ( string &filename,
     if (hasEnding(filename,string("png"))) {
         Mat img = cv::imread(filename, IMREAD_GRAYSCALE);
         imgsolver::GridFinder finder = imgsolver::GridFinder(&img);
-
+        if (dump_images) {
+            finder.enable_dump_images();
+        }
+        auto start = std::chrono::high_resolution_clock::now();
         input = finder.parse();
+        auto stop = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
+        cout << "Picture parsing ready, took:" << duration.count() << " sec" << endl;
         nonogram = new Nonogram(*input);
     } else if ( hasEnding(filename,string("non")) ||
                 hasEnding(filename,string("txt"))
@@ -111,7 +121,11 @@ void process_file ( string &filename,
             if (rule_improve_log) {
                 nonogram->enable_rule_improve_log();
             }
+            auto start = std::chrono::high_resolution_clock::now();
             nonogram->solve();
+            auto stop = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
+            cout << "Solving ready, took:" << duration.count() << " sec" << endl;
 
             if (dispay) {
                 print_solved_status(nonogram);
@@ -136,6 +150,7 @@ void print_usage() {
     printf("  -h    Display this help text\n");
     printf("  -i    Log possible improvements for the rule mechanism\n");
     printf("  -s    Show solution as a image\n");
+    printf("  -d    Dump images used in the OCR process in /tmp\n");
     printf("  Required:\n");
     printf("  -f    Input file name. Supported formats: txt,non and png\n");
 }
@@ -158,7 +173,8 @@ int main(int argc, char *argv[]) {
     process_file (
         filename,
         input.cmdOptionExists("-i"),
-        input.cmdOptionExists("-s")
+        input.cmdOptionExists("-s"),
+        input.cmdOptionExists("-d")
     );
     return 0;
 }

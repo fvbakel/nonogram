@@ -1,7 +1,7 @@
 #include   <imgsolver/GridFinder.h>
 
 namespace imgsolver {
-    GridFinder::GridFinder(cv::Mat *img) {
+    GridFinder::GridFinder(cv::Mat *img, string modelname) {
         m_org_img = img;
         m_output = new NonogramInput();
         // make pure black and white
@@ -17,11 +17,8 @@ namespace imgsolver {
 
         m_ocr = new tesseract::TessBaseAPI();
         
-        // TODO: improve here
-        //tesseract::GenericVector<STRING> languages;
-        //m_ocr->GetAvailableLanguagesAsVector(languages);
         // export TESSDATA_PREFIX=/home/fvbakel/git/tessdata_best
-        if (m_ocr->Init(NULL, "nono-model")) {
+        if (m_ocr->Init(NULL, modelname.c_str())) {
             std::cerr << "Could not initialize tesseract.\n";
             std::__throw_runtime_error("Could not initialize tesseract.");
         }
@@ -544,8 +541,9 @@ namespace imgsolver {
         }
        // cv::imshow("Test",image);
        // cv::waitKey(0);
-
-       // debug_save_image(detected_text,image);
+        if (m_dump_images) {
+            debug_save_image(detected_text,image);
+        }
 
         return result;
     }
@@ -579,6 +577,10 @@ namespace imgsolver {
         process_y_clues();
 
         return m_output;
+    }
+
+    void GridFinder::enable_dump_images() {
+        m_dump_images = true;
     }
 
     void GridFinder::debug_save_image(std::string &prefix,cv::Mat &image) {

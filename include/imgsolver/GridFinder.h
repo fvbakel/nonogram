@@ -10,6 +10,7 @@ namespace imgsolver {
     static const int    UNDEFINED               = -2;
     static const int    BORDER_SIZE             = 5;
     static const float  CONSIDERED_LINE_FACTOR  = 0.5;
+    static const std::string DEFAULT_MODEL      = "nono-model";
     // 40% larger gab than the smallest gab is still considered the same number
     // TODO: make this a member variable that can be set?
     static const float Y_CLUE_GAB_FACTOR = 1.4;
@@ -44,6 +45,8 @@ namespace imgsolver {
             int  m_y_clue_width         = UNDEFINED;
             int  m_y_clue_line_thickness= UNDEFINED;
 
+            bool m_dump_images          = false;
+
             void cleanup_bw_img();
             void clear_left_border();
             void clear_top_border();
@@ -69,10 +72,9 @@ namespace imgsolver {
             void debug_save_image(std::string &prefix,cv::Mat &image);
 
         public:
-            GridFinder(cv::Mat *img);
+            GridFinder(cv::Mat *img, std::string modelname = DEFAULT_MODEL);
             ~GridFinder();
+            void enable_dump_images();
             NonogramInput *parse();
-
-            
     };
 }
