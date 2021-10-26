@@ -40,14 +40,29 @@ class InputParser{
 
 using namespace cv;
 
-void display_nonogram(string &filename,Nonogram *nonogram) {
-    namedWindow(filename,1);
+void display_nonogram(
+        string &filename,
+        Nonogram *nonogram,
+        imgsolver::GridFinder *finder
+) {
     int x_size = nonogram->get_x_size();
     int y_size = nonogram->get_y_size();
+
     Vec3b white_col = Vec3b(255,255, 255);
     Vec3b black_col = Vec3b(0,0, 0);
     Vec3b no_color_col = Vec3b(0,255, 0);
-    Mat result(y_size,x_size,CV_8UC3, Scalar(255,255, 255));
+    Mat result;
+
+    bool display_in_org = false;
+    if (finder != nullptr) {
+        display_in_org = true;
+    }
+
+    if (display_in_org) {
+        result = cv::imread(filename);
+    } else {
+        result = Mat(y_size,x_size,CV_8UC3, Scalar(255,255, 255));
+    }
     for (int y_index = 0; y_index < y_size; y_index++) {
         for (int x_index = 0; x_index < x_size; x_index++) {
             Location *location = nonogram->get_Location(x_index, y_index);
@@ -58,15 +73,28 @@ void display_nonogram(string &filename,Nonogram *nonogram) {
             } else if (loc_color == no_color) {
                 chosen = &no_color_col;
             }
-            result.at<Vec3b>(Point(x_index,y_index)) = *chosen;
+
+            if (display_in_org) {
+                cv::Rect loc_rect;
+                finder->get_location(x_index,y_index,loc_rect);
+                cv::rectangle(result,loc_rect,*chosen,cv::FILLED);
+            } else {
+                result.at<Vec3b>(Point(x_index,y_index)) = *chosen;
+            }
         }
     }
+    if (display_in_org) {
+        namedWindow(filename,WINDOW_NORMAL);
+        imshow(filename, result);
+    } else {
+        namedWindow(filename,WINDOW_AUTOSIZE);
+        int scale = 512 / x_size;
+        Mat scaled;
+        resize(result,scaled,Size(),scale,scale,INTER_NEAREST);
+        //display the image:
+        imshow(filename, scaled);
 
-    int scale = 512 / x_size;
-    Mat scaled;
-    resize(result,scaled,Size(),scale,scale,INTER_NEAREST);
-    //display the image:
-    imshow(filename, scaled);
+    }
     
     //wait for the user to press any key:
     waitKey(0);
@@ -91,19 +119,22 @@ bool hasEnding (std::string const &fullString, std::string const &ending) {
 void process_file ( string &filename, 
                     bool rule_improve_log = false,
                     bool dispay = false,
+                    bool display_in_org = false,
                     bool dump_images =false
 ) {
     printf("Start processing: %s\n",filename.c_str());
     Nonogram *nonogram = nullptr;
     NonogramInput *input = nullptr;
+    imgsolver::GridFinder *finder = nullptr;
+    Mat img;
     if (hasEnding(filename,string("png"))) {
-        Mat img = cv::imread(filename, IMREAD_GRAYSCALE);
-        imgsolver::GridFinder finder = imgsolver::GridFinder(&img);
+        img = cv::imread(filename, IMREAD_GRAYSCALE);
+        finder = new imgsolver::GridFinder(&img);
         if (dump_images) {
-            finder.enable_dump_images();
+            finder->enable_dump_images();
         }
         auto start = std::chrono::high_resolution_clock::now();
-        input = finder.parse();
+        input = finder->parse();
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
         cout << "Picture parsing ready, took:" << duration.count() << " sec" << endl;
@@ -129,13 +160,21 @@ void process_file ( string &filename,
 
             if (dispay) {
                 print_solved_status(nonogram);
-                display_nonogram(filename,nonogram);
+                if (display_in_org)  {
+                    display_nonogram(filename,nonogram,finder);
+                } else {
+                    display_nonogram(filename,nonogram,nullptr);
+                }
+                
             } else {
                 nonogram->print();
                 print_solved_status(nonogram);
             }
         }
         delete nonogram;
+        if (finder !=nullptr) {
+            delete finder;
+        }
         if (input != nullptr) {
             delete input;
         }
@@ -150,6 +189,7 @@ void print_usage() {
     printf("  -h    Display this help text\n");
     printf("  -i    Log possible improvements for the rule mechanism\n");
     printf("  -s    Show solution as a image\n");
+    printf("  -o    Show solution in the original image, only in combination with png and -s\n");
     printf("  -d    Dump images used in the OCR process in /tmp\n");
     printf("  Required:\n");
     printf("  -f    Input file name. Supported formats: txt,non and png\n");
@@ -174,6 +214,7 @@ int main(int argc, char *argv[]) {
         filename,
         input.cmdOptionExists("-i"),
         input.cmdOptionExists("-s"),
+        input.cmdOptionExists("-o"),
         input.cmdOptionExists("-d")
     );
     return 0;

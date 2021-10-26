@@ -575,8 +575,21 @@ namespace imgsolver {
 
         process_x_clues();
         process_y_clues();
-
+        m_parsed = true;
         return m_output;
+    }
+
+    void GridFinder::get_location(
+        int x_index,
+        int y_index,
+        cv::Rect &rect
+    ) {
+        if (m_parsed) {
+            rect.x = m_x_lines[x_index] + m_x_thickness[x_index];
+            rect.y = m_y_lines[y_index] + m_y_thickness[y_index];
+            rect.width = m_x_lines[x_index + 1] - rect.x ;
+            rect.height = m_y_lines[y_index + 1] - rect.y;
+        }
     }
 
     void GridFinder::enable_dump_images() {

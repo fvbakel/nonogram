@@ -45,7 +45,9 @@ namespace imgsolver {
             int  m_y_clue_width         = UNDEFINED;
             int  m_y_clue_line_thickness= UNDEFINED;
 
+            bool m_parsed               = false;
             bool m_dump_images          = false;
+            
 
             void cleanup_bw_img();
             void clear_left_border();
@@ -75,6 +77,11 @@ namespace imgsolver {
             GridFinder(cv::Mat *img, std::string modelname = DEFAULT_MODEL);
             ~GridFinder();
             void enable_dump_images();
+            void get_location(
+                int x_index,
+                int y_index,
+                cv::Rect &rect
+            );
             NonogramInput *parse();
     };
 }
