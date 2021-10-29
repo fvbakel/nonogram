@@ -14,19 +14,7 @@ namespace imgsolver {
         cleanup_bw_img();
        // cv::imshow("Test",m_bw_img);
       //  cv::waitKey(0);
-
-        m_ocr = new tesseract::TessBaseAPI();
-        
-        // export TESSDATA_PREFIX=/home/fvbakel/git/tessdata_best
-        if (m_ocr->Init(NULL, modelname.c_str())) {
-            std::cerr << "Could not initialize tesseract.\n";
-            std::__throw_runtime_error("Could not initialize tesseract.");
-        }
-
-        m_ocr->SetVariable("user_defined_dpi", "70");
-        m_ocr->SetVariable("tessedit_char_blacklist", ".,!?@#$%&*()<>_-+=/:;'\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
-        m_ocr->SetVariable("tessedit_char_whitelist", "0123456789");
-        m_ocr->SetVariable("classify_bln_numeric_mode", "1");
+        m_num_detector = new TesseractDetect(modelname);
     }
 
     void GridFinder::cleanup_bw_img() {
@@ -95,15 +83,8 @@ namespace imgsolver {
         cv::threshold(m_gray_img, dark_bw_img,254, 255, cv::THRESH_BINARY);
 
         // get rectangle of first y clue
-       // int width = m_x_lines[0] - m_x_left_offset;
         int x = m_x_left_offset;
         int y = m_y_lines[0] + m_y_thickness[0];
-        //int height = m_y_lines[1] - y;
-     //   int height = 1;
-        //cv::Rect rect(x, y, width, height);
-        //cv::Mat tmp_subset = dark_bw_img(rect);
-        //std::string tmp = std::string("fixed");
-        //debug_save_image(tmp,tmp_subset);
         bool last_was_black = false;
         while ( x < m_x_lines[0] ) {
             if (((int) dark_bw_img.at<uchar>(y,x))   == 0) {
@@ -125,16 +106,7 @@ namespace imgsolver {
             }
             x++;
         }
-        /*
-        if (m_has_fixed_y_width) {
-            std::cout << "Found fixed y clue width:" << m_y_clue_width << "\n";
-            std::cout << "Found fixed y clue thickness:" << m_y_clue_line_thickness << "\n";
-        } else {
-            std::cout << "Not found fixed y clue width:" << m_y_clue_width << "\n";
-            std::cout << "Not found fixed y clue thickness:" << m_y_clue_line_thickness << "\n";
-        }
-        */
-        
+       
     }
 
     void GridFinder::determine_offsets() {
@@ -434,15 +406,11 @@ namespace imgsolver {
                 break;
             }
         }
-        // TODO: improve below ...
-        int width  = end_x - start_x + 1;
-        int height = end_y - start_y + 1;
+ 
         result.x=start_x;
         result.y=start_y;
-        result.width=width;
-        result.height=height;
-        //cv::Rect rect(start_x, start_y, width, height);
-        //result = rect;
+        result.width=end_x - start_x + 1;;
+        result.height=end_y - start_y + 1;;
         return found_at_least_one_black;
     }
     
@@ -525,23 +493,11 @@ namespace imgsolver {
     Given an image with one number, get that number as int
     */
     int GridFinder::parse_one_number(cv::Mat &image) {
-        std::string detected_text;
-        int result = -1;
-        m_ocr->SetImage(image.data, image.cols, image.rows, image.channels() , image.step);
-        detected_text = std::string(m_ocr->GetUTF8Text());
-        detected_text.erase(std::remove(detected_text.begin(), detected_text.end(), '\n'), detected_text.end());
-        char *p;
-        int value = (int) strtol(detected_text.c_str(),&p,10);
-        if (*p ) {
-            std::cout << "ERROR: Unable to read number: " << detected_text<< "\n";
-        } else {
-            if (value > 0) {
-                result = value;
-            }
-        }
-       // cv::imshow("Test",image);
-       // cv::waitKey(0);
+        int result = m_num_detector->get_number(image);
         if (m_dump_images) {
+            stringstream detected_text_stream;
+            detected_text_stream << result;
+            string detected_text = detected_text_stream.str();
             debug_save_image(detected_text,image);
         }
 
@@ -604,9 +560,8 @@ namespace imgsolver {
     }
 
     GridFinder::~GridFinder() {
-        if (m_ocr!=nullptr) {
-            m_ocr->End();
-            delete m_ocr;
+        if (m_num_detector!=nullptr) {
+            delete m_num_detector;
         }
     }
 }

@@ -2,15 +2,15 @@
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <tesseract/baseapi.h>
+
+#include <imgsolver/constants.h>
+#include <imgsolver/NumDetector.h>
+#include <imgsolver/TesseractDetect.h>
+
 #include <solvercore/Nonogram.h>
 
 namespace imgsolver {
-    static const cv::Scalar WHITE_SCALAR = cv::Scalar(255,255,255);
-    static const int    UNDEFINED               = -2;
-    static const int    BORDER_SIZE             = 5;
-    static const float  CONSIDERED_LINE_FACTOR  = 0.5;
-    static const std::string DEFAULT_MODEL      = "nono-model";
+
     // 40% larger gab than the smallest gab is still considered the same number
     // TODO: make this a member variable that can be set?
     static const float Y_CLUE_GAB_FACTOR = 1.4;
@@ -23,7 +23,7 @@ namespace imgsolver {
             cv::Mat     m_tmp_org_subset;
             cv::Mat     m_tmp_bw_subset;
 
-            tesseract::TessBaseAPI *m_ocr = nullptr;
+            NumDetector *m_num_detector   = nullptr;
 
             NonogramInput *m_output;
 
