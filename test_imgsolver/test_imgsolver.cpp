@@ -35,6 +35,8 @@ class InputParser{
         std::vector <std::string> tokens;
 };
 
+enum detector ocr_detector = TESSERACT;
+
 std::string vector_to_string(vector<int> *vect){
     std::stringstream str_str;
     for (int i = 0 ; i< vect->size();i++) {
@@ -70,7 +72,7 @@ void test_gridfinder_1() {
 
     string filename = FILENAME;
     Mat img = cv::imread(filename, IMREAD_GRAYSCALE);
-    GridFinder *finder = new GridFinder(&img);
+    GridFinder *finder = new GridFinder(&img,ocr_detector);
 
     NonogramInput *input = finder->parse();
     std::cout <<"input->get_nr_of_x_clues()=" <<input->get_nr_of_x_clues() << "\n";
@@ -293,7 +295,7 @@ void test_gridfinder_2() {
 
     string filename = FILENAME_2;
     Mat img = cv::imread(filename, IMREAD_GRAYSCALE);
-    GridFinder *finder = new GridFinder(&img);
+    GridFinder *finder = new GridFinder(&img,ocr_detector);
 
     NonogramInput *input = finder->parse();
     std::cout <<"input->get_nr_of_x_clues()=" <<input->get_nr_of_x_clues() << "\n";
@@ -388,7 +390,7 @@ void test_gridfinder_3() {
 
     string filename = FILENAME_3;
     Mat img = cv::imread(filename, IMREAD_GRAYSCALE);
-    GridFinder *finder = new GridFinder(&img);
+    GridFinder *finder = new GridFinder(&img,ocr_detector);
 
     NonogramInput *input = finder->parse();
     std::cout <<"input->get_nr_of_x_clues()=" <<input->get_nr_of_x_clues() << "\n";
@@ -456,7 +458,7 @@ void test_gridfinder_4() {
 
     string filename = FILENAME_4;
     Mat img = cv::imread(filename, IMREAD_GRAYSCALE);
-    GridFinder *finder = new GridFinder(&img);
+    GridFinder *finder = new GridFinder(&img,ocr_detector);
 
     NonogramInput *input = finder->parse();
     std::cout <<"input->get_nr_of_x_clues()=" <<input->get_nr_of_x_clues() << "\n";
@@ -478,11 +480,13 @@ void print_usage() {
     std::cout << "  Optional:\n";
     std::cout << "  -h            Display this help text\n";
     std::cout << "  -a            Run all tests\n";
+    std::cout << "  -detector     OCR detector to use. T or D\n";
     std::cout << "  -GridFinder_1 Run GridFinder_1 test\n";
     std::cout << "  -GridFinder_2 Run GridFinder_2 test\n";
     std::cout << "  -GridFinder_3 Run GridFinder_3 test\n";
     std::cout << "  -GridFinder_4 Run GridFinder_3 test\n";
 }
+
 
 int main(int argc, char *argv[]) {
 
@@ -495,6 +499,13 @@ int main(int argc, char *argv[]) {
     bool all =false;
     if(input.cmdOptionExists("-a")){
         all = true;
+    }
+
+    if(input.cmdOptionExists("-detector")) {
+        std::string detector = input.getCmdOption("-detector");
+        if (detector.compare("D") == 0) {
+            ocr_detector = DNN;
+        }
     }
 
     if(input.cmdOptionExists("-GridFinder_1") || all){

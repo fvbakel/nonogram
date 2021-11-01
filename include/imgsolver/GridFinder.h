@@ -6,6 +6,8 @@
 #include <imgsolver/constants.h>
 #include <imgsolver/NumDetector.h>
 #include <imgsolver/TesseractDetect.h>
+#include <imgsolver/DnnDetect.h>
+#include <imgsolver/ImageDebug.h>
 
 #include <solvercore/Nonogram.h>
 
@@ -15,7 +17,7 @@ namespace imgsolver {
     // TODO: make this a member variable that can be set?
     static const float Y_CLUE_GAB_FACTOR = 1.4;
 
-    class GridFinder {
+    class GridFinder : public ImageDebug {
         private:
             cv::Mat    *m_org_img;
             cv::Mat     m_gray_img;
@@ -24,6 +26,7 @@ namespace imgsolver {
             cv::Mat     m_tmp_bw_subset;
 
             NumDetector *m_num_detector   = nullptr;
+            detector    m_detector        = TESSERACT;
 
             NonogramInput *m_output;
 
@@ -45,9 +48,7 @@ namespace imgsolver {
             int  m_y_clue_width         = UNDEFINED;
             int  m_y_clue_line_thickness= UNDEFINED;
 
-            bool m_parsed               = false;
-            bool m_dump_images          = false;
-            
+            bool m_parsed               = false;           
 
             void cleanup_bw_img();
             void clear_left_border();
@@ -70,13 +71,12 @@ namespace imgsolver {
             bool bounding_box(cv::Mat &image, cv::Rect &result);
             int  parse_one_number(cv::Mat &image);
 
-            int m_debug_file_nr = 300;
-            void debug_save_image(std::string &prefix,cv::Mat &image);
-
         public:
-            GridFinder(cv::Mat *img, std::string modelname = DEFAULT_MODEL);
+            GridFinder( cv::Mat    *img, 
+                        detector    digit_detector = TESSERACT,
+                        std::string modelname = DEFAULT_MODEL
+            );
             ~GridFinder();
-            void enable_dump_images();
             void get_location(
                 int x_index,
                 int y_index,

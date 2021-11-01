@@ -6,6 +6,6 @@ namespace imgsolver {
     class NumDetector {
         public:
             virtual ~NumDetector() {}
-            virtual int get_number(cv::Mat &image) const = 0;
+            virtual int get_number(cv::Mat &image) = 0; // const = 0;
     };
 }

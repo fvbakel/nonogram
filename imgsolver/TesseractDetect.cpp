@@ -21,7 +21,7 @@ namespace imgsolver {
         m_ocr->SetVariable("classify_bln_numeric_mode", "1");
     }
 
-    int TesseractDetect::get_number(cv::Mat &image) const {
+    int TesseractDetect::get_number(cv::Mat &image) { // const {
         std::string detected_text;
         int result = -1;
         m_ocr->SetImage(image.data, image.cols, image.rows, image.channels() , image.step);

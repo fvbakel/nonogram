@@ -16,6 +16,6 @@ namespace imgsolver {
         public:
             TesseractDetect(std::string modelname = DEFAULT_MODEL);
             ~TesseractDetect();
-            int get_number(cv::Mat &image) const override ;
+            int get_number(cv::Mat &image) override; //const override ;
     };
 }

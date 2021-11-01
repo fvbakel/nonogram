@@ -1,8 +1,9 @@
 #include   <imgsolver/GridFinder.h>
 
 namespace imgsolver {
-    GridFinder::GridFinder(cv::Mat *img, string modelname) {
+    GridFinder::GridFinder(cv::Mat *img, detector digit_detector,string modelname) {
         m_org_img = img;
+        m_detector = digit_detector;
         m_output = new NonogramInput();
         // make pure black and white
         if (m_org_img->channels() >1) {
@@ -14,7 +15,14 @@ namespace imgsolver {
         cleanup_bw_img();
        // cv::imshow("Test",m_bw_img);
       //  cv::waitKey(0);
-        m_num_detector = new TesseractDetect(modelname);
+        if (digit_detector == TESSERACT) {
+            m_num_detector = new TesseractDetect(modelname);
+        } else if (digit_detector == DNN) {
+            // TODO: make use of model name here...
+            m_num_detector = new DnnDetect();
+        } else {
+            std::__throw_runtime_error("Unable to determine OCR detector!");
+        }
     }
 
     void GridFinder::cleanup_bw_img() {
@@ -546,17 +554,6 @@ namespace imgsolver {
             rect.width = m_x_lines[x_index + 1] - rect.x ;
             rect.height = m_y_lines[y_index + 1] - rect.y;
         }
-    }
-
-    void GridFinder::enable_dump_images() {
-        m_dump_images = true;
-    }
-
-    void GridFinder::debug_save_image(std::string &prefix,cv::Mat &image) {
-        stringstream filename;
-        filename << "/tmp/F_" << prefix << "_" << m_debug_file_nr << ".png";
-        cv::imwrite(filename.str() ,image);
-        m_debug_file_nr++;
     }
 
     GridFinder::~GridFinder() {
