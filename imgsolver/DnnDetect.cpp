@@ -1,16 +1,25 @@
 
+#include <sstream>
 #include <imgsolver/DnnDetect.h>
 
 namespace imgsolver {
 
-    DnnDetect::DnnDetect(std::string model_filename) {
-        m_model_filename = model_filename;       
+    DnnDetect::DnnDetect(std::string modelname) {
+        m_modelname = modelname;
+        std::stringstream tmp_stream;
+        char *dir_name = getenv("MODEL_DIR");
+        if (dir_name != nullptr) {
+            tmp_stream << dir_name;
+        } else {
+            tmp_stream << DEFAULT_MODEL_DIR;
+        }
+        tmp_stream << "/tensorflow/" << modelname << "-graph.pb";
+        std::string model_filename = tmp_stream.str();
         m_net = cv::dnn::readNetFromTensorflow(model_filename);
     }
 
     int DnnDetect::get_number(cv::Mat &image) {
         m_cur_num = UNDEFINED;
-        m_dump_images = true;
         m_org_img = image;
         update_tmp_img();
         update_bb_digits();
@@ -47,6 +56,13 @@ namespace imgsolver {
         double final_prob;
         cv::minMaxLoc(prediction.reshape(1, 1), 0, &final_prob, 0, &classIdPoint);
         int found_digit = classIdPoint.x;
+
+        if (m_dump_images) {
+            std::stringstream stream;
+            stream << found_digit << "_digit_";
+            std::string prefix = stream.str();
+            debug_save_image(prefix,tmp_img);
+        }
         
         return found_digit;
     }

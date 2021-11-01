@@ -2,6 +2,7 @@
 
 solver=~/bin/nonogram
 export TESSDATA_PREFIX=/home/fvbakel/git/tessdata_best
+export MODEL_DIR=/home/fvbakel/git/nonogram/models
 if [ -n "$1" ]; then
   echo "Processing directory: $1"
   process_dir=$1

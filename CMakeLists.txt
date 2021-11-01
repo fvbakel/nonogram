@@ -20,7 +20,8 @@ if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR MODERN_CMAKE_BUILD_TESTING)
 endif()
 
 install(FILES ./tools/process_dir.sh DESTINATION bin)
-install(FILES ./tessdata/nono-model.traineddata DESTINATION tessdata)
+install(FILES ./models/tessdata/nono-model.traineddata DESTINATION models/tessdata)
+install(FILES ./models/tensorflow/nono-model-graph.pb DESTINATION models/tensorflow)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

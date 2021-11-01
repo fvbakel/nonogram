@@ -12,7 +12,7 @@ namespace imgsolver {
     class DnnDetect : public NumDetector, public ImageDebug {
         private:
             cv::dnn::Net            m_net;
-            std::string             m_model_filename;
+            std::string             m_modelname;
             int                     m_width   = 10;
             int                     m_height  = 20;
             cv::Size                m_size = cv::Size(m_width,m_height);
@@ -28,7 +28,7 @@ namespace imgsolver {
             int parse_digit(int i);
 
         public:
-            DnnDetect(std::string model_filename = DEFAULT_MODEL_FILE);
+            DnnDetect(std::string modelname = DEFAULT_MODEL);
             ~DnnDetect();
             int get_number(cv::Mat &image) override; //const override ;
     };

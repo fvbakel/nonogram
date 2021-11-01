@@ -11,8 +11,6 @@
 #include <imgsolver/GridFinder.h>
 #include <solvercore/Nonogram.h>
 
-
-
 class InputParser{
     public:
         InputParser (int &argc, char **argv){
@@ -39,6 +37,8 @@ class InputParser{
 };
 
 using namespace cv;
+
+enum imgsolver::detector ocr_detector = imgsolver::TESSERACT;
 
 void display_nonogram(
         string &filename,
@@ -129,7 +129,7 @@ void process_file ( string &filename,
     Mat img;
     if (hasEnding(filename,string("png"))) {
         img = cv::imread(filename, IMREAD_GRAYSCALE);
-        finder = new imgsolver::GridFinder(&img);
+        finder = new imgsolver::GridFinder(&img,ocr_detector);
         if (dump_images) {
             finder->enable_dump_images();
         }
@@ -190,15 +190,15 @@ void print_usage() {
     printf("  -i    Log possible improvements for the rule mechanism\n");
     printf("  -s    Show solution as a image\n");
     printf("  -o    Show solution in the original image, only in combination with png and -s\n");
+    printf("  -ocr  OCR detector to use.\n");
+    printf("        T: Tesseract is used, this is the default\n");
+    printf("        D: A DNN Tensorflow network is used\n");
     printf("  -d    Dump images used in the OCR process in /tmp\n");
     printf("  Required:\n");
     printf("  -f    Input file name. Supported formats: txt,non and png\n");
 }
 
 int main(int argc, char *argv[]) {
-
-    
-
     InputParser input(argc, argv);
     if(input.cmdOptionExists("-h")){
         print_usage();
@@ -209,6 +209,14 @@ int main(int argc, char *argv[]) {
         exit(0);
     }
     std::string filename = input.getCmdOption("-f");
+
+    if(input.cmdOptionExists("-ocr")) {
+        std::string detector = input.getCmdOption("-ocr");
+        if (detector.compare("D") == 0) {
+            printf("Using DNN ocr detector\n");
+            ocr_detector = imgsolver::DNN;
+        }
+    }
 
     process_file (
         filename,
