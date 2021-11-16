@@ -11,6 +11,7 @@ enable_testing()
 #add_subdirectory(hello)
 add_subdirectory(solvercore)
 add_subdirectory(imgsolver)
+add_subdirectory(qt-gui)
 
 add_subdirectory(solver)
 
