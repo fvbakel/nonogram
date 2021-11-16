@@ -9,8 +9,8 @@ class Observable
 
     public: 
         virtual ~Observable() = default;
-        void Attach(Observer& o);
-        void Detach(Observer& o);
-        void Notify();
+        void attach(Observer *o);
+        void detach(Observer *o);
+        void notify();
 
 };

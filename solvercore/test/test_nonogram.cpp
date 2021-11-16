@@ -12,6 +12,29 @@
 #include <solvercore/VarianceCalculator.h>
 
 /*
+Test Class
+*/
+class Test_Observer : public Observer  {
+
+    public:
+        Test_Observer() = default;
+
+        ~Test_Observer() = default;
+
+        void update(Observable *theChangedObservable) override
+        {
+            m_location = dynamic_cast<Location*>(theChangedObservable);
+        }
+
+        void assert_changed_location(Location *location) {
+            assert(m_location == location);
+        }
+    private:
+        Location *m_location = nullptr;
+};
+
+
+/*
 Helper functions
 */
 void create_test_locations(const int nr_to_create,locations &test_locations) {
@@ -159,6 +182,16 @@ void test_Nonegram() {
 
     nonogram->reset();
     assert(!nonogram->is_solved());
+
+    // Observer
+    Test_Observer *observer = new Test_Observer();
+    nonogram->attach_observer(observer);
+    Location *test_loc = nonogram->get_Location(1,0);
+    test_loc->set_solved_color(black);
+    observer->assert_changed_location(test_loc);
+    nonogram->detach_observer(observer);
+    
+    delete observer;
 
     nonogram->reset();
     assert(!nonogram->is_solved());

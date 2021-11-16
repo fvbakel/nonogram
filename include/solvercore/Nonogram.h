@@ -7,6 +7,7 @@
 #include <solvercore/MainConstraint.h>
 #include <solvercore/Location.h>
 #include <solvercore/NonogramInput.h>
+#include <solvercore/Observer.h>
 
 using namespace std;
 
@@ -81,6 +82,8 @@ class Nonogram {
         Location *get_Location(const int x, const int y);
         int get_x_size();
         int get_y_size();
+        void attach_observer(Observer *observer);
+        void detach_observer(Observer *observer);
 
         bool is_input_valid();
         bool is_solved();

@@ -103,6 +103,7 @@ void Location::set_solved_color(enum color new_color) {
         set_dirty_both();
         lock();
         error_check();
+        notify();
     }
 }
 

@@ -4,9 +4,9 @@
 #include <string>
 #include <solvercore/constants.h>
 #include <solvercore/Segment.h>
+#include <solvercore/Observable.h>
 
-
-class Location {
+class Location : public Observable {
     private:
         int         m_x         = 0;
         int         m_y         = 0;

@@ -216,6 +216,18 @@ int Nonogram::get_y_size() {
     return m_y_size;
 }
 
+void Nonogram::attach_observer(Observer *observer) {
+    for (auto location : m_locations) {
+        location->attach(observer);
+    }
+}
+
+void Nonogram::detach_observer(Observer *observer) {
+    for (auto location : m_locations) {
+        location->detach(observer);
+    }
+}
+
 bool Nonogram::is_input_valid() {
     if (!m_valid_checked) {
         bool dir_valid = is_input_valid_dir(x_dir) && is_input_valid_dir(y_dir);
