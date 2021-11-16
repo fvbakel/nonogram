@@ -19,6 +19,8 @@ NonogramQt::NonogramQt(QWidget *parent)
     createActions();
 
     resize(QGuiApplication::primaryScreen()->availableSize() * 3 / 5);
+    const QString message = tr("Select File -> Open...");
+    statusBar()->showMessage(message);
 }
 
 bool NonogramQt::loadFile(const QString &fileName)
@@ -37,9 +39,10 @@ bool NonogramQt::loadFile(const QString &fileName)
 
     setWindowFilePath(fileName);
 
-    const QString message = tr("Opened \"%1\", %2x%3, Depth: %4")
-        .arg(QDir::toNativeSeparators(fileName)).arg(image.width()).arg(image.height()).arg(image.depth());
+    const QString message = tr("Opened \"%1\"")
+        .arg(QDir::toNativeSeparators(fileName));
     statusBar()->showMessage(message);
+
     return true;
 }
 
@@ -53,6 +56,9 @@ void NonogramQt::setImage(const QImage &newImage)
 
     scrollArea->setVisible(true);
     fitToWindowAct->setEnabled(true);
+    solveAct->setEnabled(true);
+    solveStepAct->setEnabled(true);
+    
     updateActions();
 
     if (!fitToWindowAct->isChecked())
@@ -87,6 +93,18 @@ void NonogramQt::open()
     initializeImageFileDialog(dialog, QFileDialog::AcceptOpen);
 
     while (dialog.exec() == QDialog::Accepted && !loadFile(dialog.selectedFiles().first())) {}
+}
+
+void NonogramQt::solve()
+{
+    QMessageBox::about(this, tr("Nonogram Qt"),
+            tr("solve Not implemented yet!"));
+}
+
+void NonogramQt::solve_step_by_step()
+{
+    QMessageBox::about(this, tr("Nonogram Qt"),
+            tr("solve_step_by_step Not implemented yet!"));
 }
 
 void NonogramQt::zoomIn()
@@ -133,6 +151,14 @@ void NonogramQt::createActions()
     QAction *exitAct = fileMenu->addAction(tr("E&xit"), this, &QWidget::close);
     exitAct->setShortcut(tr("Ctrl+Q"));
 
+    QMenu *solveMenu = menuBar()->addMenu(tr("&Solve"));
+    solveAct = solveMenu->addAction(tr("&Solve"), this, &NonogramQt::solve);
+    solveAct->setShortcut(tr("Ctrl+S"));
+    solveAct->setEnabled(false);
+    solveStepAct = solveMenu->addAction(tr("&Solve step by step"), this, &NonogramQt::solve_step_by_step);
+    solveStepAct->setShortcut(tr("Ctrl+D"));
+    solveStepAct->setEnabled(false);
+
     QMenu *viewMenu = menuBar()->addMenu(tr("&View"));
 
     zoomInAct = viewMenu->addAction(tr("Zoom &In (25%)"), this, &NonogramQt::zoomIn);
@@ -144,7 +170,7 @@ void NonogramQt::createActions()
     zoomOutAct->setEnabled(false);
 
     normalSizeAct = viewMenu->addAction(tr("&Normal Size"), this, &NonogramQt::normalSize);
-    normalSizeAct->setShortcut(tr("Ctrl+S"));
+    normalSizeAct->setShortcut(tr("Ctrl+N"));
     normalSizeAct->setEnabled(false);
 
     viewMenu->addSeparator();

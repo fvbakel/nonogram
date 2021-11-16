@@ -21,6 +21,9 @@ public:
 
 private slots:
     void open();
+
+    void solve();
+    void solve_step_by_step();
     void zoomIn();
     void zoomOut();
     void normalSize();
@@ -40,6 +43,9 @@ private:
     QLabel *imageLabel;
     QScrollArea *scrollArea;
     double scaleFactor = 1;
+
+    QAction *solveAct;
+    QAction *solveStepAct;
 
     QAction *zoomInAct;
     QAction *zoomOutAct;
