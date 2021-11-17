@@ -2,6 +2,9 @@
 
 #include <QtWidgets>
 
+#include <imgsolver/GridFinder.h>
+#include <solvercore/Nonogram.h>
+
 NonogramQt::NonogramQt(QWidget *parent)
    : QMainWindow(parent), imageLabel(new QLabel)
    , scrollArea(new QScrollArea)
@@ -25,17 +28,9 @@ NonogramQt::NonogramQt(QWidget *parent)
 
 bool NonogramQt::loadFile(const QString &fileName)
 {
-    QImageReader reader(fileName);
-    reader.setAutoTransform(true);
-    const QImage newImage = reader.read();
-    if (newImage.isNull()) {
-        QMessageBox::information(this, QGuiApplication::applicationDisplayName(),
-                                 tr("Cannot load %1: %2")
-                                 .arg(QDir::toNativeSeparators(fileName), reader.errorString()));
-        return false;
-    }
-
-    setImage(newImage);
+    m_current_file_name = fileName.toStdString();
+    m_current_image = cv::imread(m_current_file_name);
+    updateImage();
 
     setWindowFilePath(fileName);
 
@@ -46,14 +41,40 @@ bool NonogramQt::loadFile(const QString &fileName)
     return true;
 }
 
-void NonogramQt::setImage(const QImage &newImage)
+void NonogramQt::updateImage()
 {
-    image = newImage;
-    if (image.colorSpace().isValid())
-        image.convertToColorSpace(QColorSpace::SRgb);
-    imageLabel->setPixmap(QPixmap::fromImage(image));
-    scaleFactor = 1.0;
+    QPixmap pixmap;
+    if(m_current_image.type()==CV_8UC1)
+    {
+        // Set the color table (used to translate colour indexes to qRgb values)
+        QVector<QRgb> colorTable;
+        for (int i=0; i<256; i++)
+            colorTable.push_back(qRgb(i,i,i));
+        // Copy input Mat
+        const uchar *qImageBuffer = (const uchar*)m_current_image.data;
+        // Create QImage with same dimensions as input Mat
+        QImage img(qImageBuffer, m_current_image.cols, m_current_image.rows, m_current_image.step, QImage::Format_Indexed8);
+        img.setColorTable(colorTable);
+        pixmap = QPixmap::fromImage(img);
+    }
+    // 8-bits unsigned, NO. OF CHANNELS=3
+    if(m_current_image.type()==CV_8UC3)
+    {
+        // Copy input Mat
+        const uchar *qImageBuffer = (const uchar*)m_current_image.data;
+        // Create QImage with same dimensions as input Mat
+        QImage img(qImageBuffer, m_current_image.cols, m_current_image.rows, m_current_image.step, QImage::Format_RGB888);
+        pixmap = QPixmap::fromImage(img.rgbSwapped());
+    }
+    else
+    {
+        qDebug() << "ERROR: Mat could not be converted to QImage or QPixmap.";
+        return;
+    }
 
+    imageLabel->setPixmap(pixmap);
+ 
+    
     scrollArea->setVisible(true);
     fitToWindowAct->setEnabled(true);
     solveAct->setEnabled(true);

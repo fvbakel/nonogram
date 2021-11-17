@@ -1,7 +1,13 @@
 #pragma once
+#include <string>
 
 #include <QMainWindow>
 #include <QImage>
+
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/types_c.h>
+
+
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -34,21 +40,22 @@ private:
     void createActions();
     void createMenus();
     void updateActions();
-    bool saveFile(const QString &fileName);
-    void setImage(const QImage &newImage);
+    void updateImage();
     void scaleImage(double factor);
     void adjustScrollBar(QScrollBar *scrollBar, double factor);
 
-    QImage image;
-    QLabel *imageLabel;
-    QScrollArea *scrollArea;
-    double scaleFactor = 1;
+    double          scaleFactor         = 1;
+    std::string     m_current_file_name;
+    cv::Mat        m_current_image;
 
-    QAction *solveAct;
-    QAction *solveStepAct;
+    QLabel          *imageLabel;
+    QScrollArea     *scrollArea;
+    
+    QAction         *solveAct;
+    QAction         *solveStepAct;
 
-    QAction *zoomInAct;
-    QAction *zoomOutAct;
-    QAction *normalSizeAct;
-    QAction *fitToWindowAct;
+    QAction         *zoomInAct;
+    QAction         *zoomOutAct;
+    QAction         *normalSizeAct;
+    QAction         *fitToWindowAct;
 };
