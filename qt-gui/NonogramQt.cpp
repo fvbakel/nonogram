@@ -2,9 +2,6 @@
 
 #include <QtWidgets>
 
-#include <imgsolver/GridFinder.h>
-#include <solvercore/Nonogram.h>
-
 NonogramQt::NonogramQt(QWidget *parent)
    : QMainWindow(parent), imageLabel(new QLabel)
    , scrollArea(new QScrollArea)
@@ -29,9 +26,14 @@ NonogramQt::NonogramQt(QWidget *parent)
 bool NonogramQt::loadFile(const QString &fileName)
 {
     m_current_file_name = fileName.toStdString();
-    m_current_image = cv::imread(m_current_file_name);
-    updateImage();
+    m_current_image = cv::imread(m_current_file_name,cv::IMREAD_GRAYSCALE);
+    if (!updateImage()) {
+        return false;
+    }
 
+    if (!fitToWindowAct->isChecked())
+        imageLabel->adjustSize();
+        
     setWindowFilePath(fileName);
 
     const QString message = tr("Opened \"%1\"")
@@ -41,7 +43,7 @@ bool NonogramQt::loadFile(const QString &fileName)
     return true;
 }
 
-void NonogramQt::updateImage()
+bool NonogramQt::updateImage()
 {
     QPixmap pixmap;
     if(m_current_image.type()==CV_8UC1)
@@ -56,10 +58,8 @@ void NonogramQt::updateImage()
         QImage img(qImageBuffer, m_current_image.cols, m_current_image.rows, m_current_image.step, QImage::Format_Indexed8);
         img.setColorTable(colorTable);
         pixmap = QPixmap::fromImage(img);
-    }
-    // 8-bits unsigned, NO. OF CHANNELS=3
-    if(m_current_image.type()==CV_8UC3)
-    {
+    } else if(m_current_image.type()==CV_8UC3) {
+         // 8-bits unsigned, NO. OF CHANNELS=3
         // Copy input Mat
         const uchar *qImageBuffer = (const uchar*)m_current_image.data;
         // Create QImage with same dimensions as input Mat
@@ -68,8 +68,9 @@ void NonogramQt::updateImage()
     }
     else
     {
-        qDebug() << "ERROR: Mat could not be converted to QImage or QPixmap.";
-        return;
+        QMessageBox::information(this, tr("Nonogram Qt"),
+            tr("Unable to display image."));
+        return false;
     }
 
     imageLabel->setPixmap(pixmap);
@@ -81,9 +82,8 @@ void NonogramQt::updateImage()
     solveStepAct->setEnabled(true);
     
     updateActions();
-
-    if (!fitToWindowAct->isChecked())
-        imageLabel->adjustSize();
+    
+    return true;
 }
 
 static void initializeImageFileDialog(QFileDialog &dialog, QFileDialog::AcceptMode acceptMode)
@@ -118,13 +118,47 @@ void NonogramQt::open()
 
 void NonogramQt::solve()
 {
-    QMessageBox::about(this, tr("Nonogram Qt"),
-            tr("solve Not implemented yet!"));
+    m_finder = new imgsolver::GridFinder(&m_current_image,ocr_detector);
+    //      m_finder->enable_dump_images();
+    m_input = m_finder->parse();
+    m_nonogram = new Nonogram(*m_input);
+    m_nonogram->solve();
+    if (m_nonogram->is_solved()) {
+        make_solution_image();
+        updateImage();
+    }
 }
+
+void NonogramQt::make_solution_image() {
+
+    int x_size = m_nonogram->get_x_size();
+    int y_size = m_nonogram->get_y_size();
+
+    cv::Vec3b white_col = cv::Vec3b(255,255, 255);
+    cv::Vec3b black_col = cv::Vec3b(0,0, 0);
+    cv::Vec3b no_color_col = cv::Vec3b(0,255, 0);
+
+    for (int y_index = 0; y_index < y_size; y_index++) {
+        for (int x_index = 0; x_index < x_size; x_index++) {
+            Location *location = m_nonogram->get_Location(x_index, y_index);
+            enum color loc_color = location->get_color();
+            cv::Vec3b *chosen = &white_col;
+            if (loc_color == black) {
+                chosen = &black_col;
+            } else if (loc_color == no_color) {
+                chosen = &no_color_col;
+            }
+            cv::Rect loc_rect;
+            m_finder->get_location(x_index,y_index,loc_rect);
+            cv::rectangle(m_current_image,loc_rect,*chosen,cv::FILLED);
+        }
+    }
+}
+
 
 void NonogramQt::solve_step_by_step()
 {
-    QMessageBox::about(this, tr("Nonogram Qt"),
+    QMessageBox::information(this, tr("Nonogram Qt"),
             tr("solve_step_by_step Not implemented yet!"));
 }
 
@@ -229,4 +263,19 @@ void NonogramQt::adjustScrollBar(QScrollBar *scrollBar, double factor)
 {
     scrollBar->setValue(int(factor * scrollBar->value()
                             + ((factor - 1) * scrollBar->pageStep()/2)));
+}
+
+
+NonogramQt::~NonogramQt() {
+    if (m_nonogram != nullptr) {
+        delete m_nonogram;
+    }
+
+    if (m_input != nullptr) {
+        delete m_input;
+    }
+
+    if (m_finder != nullptr) {
+        delete m_finder;
+    }
 }

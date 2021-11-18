@@ -7,7 +7,8 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/types_c.h>
 
-
+#include <imgsolver/GridFinder.h>
+#include <solvercore/Nonogram.h>
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -23,6 +24,7 @@ class NonogramQt : public QMainWindow
 
 public:
     NonogramQt(QWidget *parent = nullptr);
+    ~NonogramQt();
     bool loadFile(const QString &);
 
 private slots:
@@ -40,13 +42,20 @@ private:
     void createActions();
     void createMenus();
     void updateActions();
-    void updateImage();
+    bool updateImage();
     void scaleImage(double factor);
     void adjustScrollBar(QScrollBar *scrollBar, double factor);
+    void make_solution_image();
 
     double          scaleFactor         = 1;
     std::string     m_current_file_name;
-    cv::Mat        m_current_image;
+    cv::Mat         m_current_image;
+
+    Nonogram                *m_nonogram   = nullptr;
+    NonogramInput           *m_input      = nullptr;
+    imgsolver::GridFinder   *m_finder     = nullptr;
+    //TODO: make configurable
+    enum imgsolver::detector ocr_detector = imgsolver::detector::DNN;
 
     QLabel          *imageLabel;
     QScrollArea     *scrollArea;
