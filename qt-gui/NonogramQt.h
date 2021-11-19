@@ -65,6 +65,8 @@ private:
     static QString strippedName(const QString &fullFileName);
 
     double          m_scale_factor         = 1;
+    int             m_step_speed           = 5;
+    int             m_step_count           = 0;
     std::string     m_current_file_name;
     cv::Mat         m_current_image;
 

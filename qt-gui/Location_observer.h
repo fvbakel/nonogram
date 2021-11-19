@@ -13,5 +13,4 @@ class Location_observer : public Observer  {
 
     private:
         NonogramQt      *m_gui = nullptr;
-        unsigned int     m_delay = 1;
 };

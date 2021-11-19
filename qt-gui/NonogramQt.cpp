@@ -274,7 +274,11 @@ Public method
 void NonogramQt::draw_location(Location *location) {
     _draw_location(location);
     update_image();
-    image_label->repaint();
+    m_step_count++;
+    if (m_step_count >= m_step_speed) {
+        image_label->repaint();
+        m_step_count = 0;
+    }
 }
 
 /*
@@ -331,7 +335,6 @@ void NonogramQt::update_fit_to_height() {
     QSize available_size = scroll_area->viewport()->size();
     QSize required_size = image_label->pixmap(Qt::ReturnByValueConstant::ReturnByValue).size();
     double available_height = (double) ( available_size.height());
-    std::cout << "available_height" << available_height << "\n";
     int required_height = required_size.height();
 
     m_scale_factor = 1.0;
