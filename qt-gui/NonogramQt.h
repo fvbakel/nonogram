@@ -40,13 +40,15 @@ private slots:
     void zoom_in();
     void zoom_out();
     void normal_size();
-    void fit_to_window();
+    void fit_to_height();
     void about();
 
 private:
+    void resizeEvent(QResizeEvent*);
+    void update_fit_to_height();
     void create_actions();
     void create_menus();
-    void update_zoom_actions();
+  //  void update_zoom_actions();
     bool update_image();
     void _draw_location(Location *location);
     void scale_image(double factor);
@@ -89,7 +91,7 @@ private:
     QAction         *zoom_in_act;
     QAction         *zoom_out_act;
     QAction         *normal_size_act;
-    QAction         *fit_to_window_act;
+    QAction         *fit_to_height_act;
 
     cv::Vec3b white_col = cv::Vec3b(255,255, 255);
     cv::Vec3b black_col = cv::Vec3b(0,0, 0);

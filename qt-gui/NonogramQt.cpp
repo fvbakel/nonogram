@@ -45,9 +45,6 @@ bool NonogramQt::loadFile(const QString &fileName)
 
     parse_input_image();
     update_gui_after_load();
-
-    if (!fit_to_window_act->isChecked())
-        image_label->adjustSize();
         
     setWindowFilePath(fileName);
 
@@ -95,12 +92,21 @@ bool NonogramQt::update_image()
 
 void NonogramQt::update_gui_after_load() {
     scroll_area->setVisible(true);
-    fit_to_window_act->setEnabled(true);
+    fit_to_height_act->setEnabled(true);
     solve_act->setEnabled(true);
     solve_step_act->setEnabled(true);
     reset_act->setEnabled(true);
     
-    update_zoom_actions();
+    zoom_in_act->setEnabled(true);
+    zoom_out_act->setEnabled(true);
+    normal_size_act->setEnabled(true);
+    //fit_to_height_act->setEnabled(true);
+
+    if (fit_to_height_act->isChecked()) {
+        update_fit_to_height();
+    } else {
+        image_label->adjustSize();
+    }
 }
 
 static void initializeImageFileDialog(QFileDialog &dialog, QFileDialog::AcceptMode acceptMode)
@@ -305,26 +311,41 @@ void NonogramQt::make_solution_image() {
 void NonogramQt::zoom_in()
 {
     scale_image(1.25);
+    fit_to_height_act->setChecked(false);
 }
 
 void NonogramQt::zoom_out()
 {
     scale_image(0.8);
+    fit_to_height_act->setChecked(false);
 }
 
 void NonogramQt::normal_size()
 {
     image_label->adjustSize();
     m_scale_factor = 1.0;
+    fit_to_height_act->setChecked(false);
 }
 
-void NonogramQt::fit_to_window()
+void NonogramQt::update_fit_to_height() {
+    QSize available_size = scroll_area->viewport()->size();
+    QSize required_size = image_label->pixmap(Qt::ReturnByValueConstant::ReturnByValue).size();
+    double available_height = (double) ( available_size.height());
+    std::cout << "available_height" << available_height << "\n";
+    int required_height = required_size.height();
+
+    m_scale_factor = 1.0;
+    double factor = available_height / required_height;
+    if (factor > 0) {
+        scale_image(factor);
+    }
+}
+
+void NonogramQt::fit_to_height()
 {
-    bool fitToWindow = fit_to_window_act->isChecked();
-    scroll_area->setWidgetResizable(fitToWindow);
-    if (!fitToWindow)
-        normal_size();
-    update_zoom_actions();
+    if (fit_to_height_act->isChecked()) {
+        update_fit_to_height();
+    } 
 }
 
 void NonogramQt::about()
@@ -388,21 +409,15 @@ void NonogramQt::create_actions()
 
     viewMenu->addSeparator();
 
-    fit_to_window_act = viewMenu->addAction(tr("&Fit to Window"), this, &NonogramQt::fit_to_window);
-    fit_to_window_act->setEnabled(false);
-    fit_to_window_act->setCheckable(true);
-    fit_to_window_act->setShortcut(tr("Ctrl+F"));
+    fit_to_height_act = viewMenu->addAction(tr("&Fit to height"), this, &NonogramQt::fit_to_height);
+    fit_to_height_act->setEnabled(false);
+    fit_to_height_act->setCheckable(true);
+    fit_to_height_act->setChecked(true);
+    fit_to_height_act->setShortcut(tr("Ctrl+F"));
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
 
     helpMenu->addAction(tr("&About"), this, &NonogramQt::about);
-}
-
-void NonogramQt::update_zoom_actions()
-{
-    zoom_in_act->setEnabled(!fit_to_window_act->isChecked());
-    zoom_out_act->setEnabled(!fit_to_window_act->isChecked());
-    normal_size_act->setEnabled(!fit_to_window_act->isChecked());
 }
 
 void NonogramQt::scale_image(double factor)
@@ -413,14 +428,23 @@ void NonogramQt::scale_image(double factor)
     adjust_scroll_bar(scroll_area->horizontalScrollBar(), factor);
     adjust_scroll_bar(scroll_area->verticalScrollBar(), factor);
 
-    zoom_in_act->setEnabled(m_scale_factor < 3.0);
-    zoom_out_act->setEnabled(m_scale_factor > 0.333);
+    if (!fit_to_height_act->isChecked()) {
+        zoom_in_act->setEnabled(m_scale_factor < 3.0);
+        zoom_out_act->setEnabled(m_scale_factor > 0.333);
+    }
 }
 
 void NonogramQt::adjust_scroll_bar(QScrollBar *scrollBar, double factor)
 {
     scrollBar->setValue(int(factor * scrollBar->value()
                             + ((factor - 1) * scrollBar->pageStep()/2)));
+}
+
+void NonogramQt::resizeEvent(QResizeEvent*)
+{
+    if (fit_to_height_act->isChecked()) {
+        update_fit_to_height();
+    }
 }
 
 
