@@ -41,6 +41,7 @@ bool NonogramQt::loadFile(const QString &fileName)
     if (!update_image()) {
         return false;
     }
+    NonogramQt::prependToRecentFiles(fileName);
 
     parse_input_image();
     update_gui_after_load();
@@ -130,6 +131,88 @@ void NonogramQt::open()
     initializeImageFileDialog(dialog, QFileDialog::AcceptOpen);
 
     while (dialog.exec() == QDialog::Accepted && !loadFile(dialog.selectedFiles().first())) {}
+}
+
+void NonogramQt::setRecentFilesVisible(bool visible)
+{
+    recentFileSubMenuAct->setVisible(visible);
+    recentFileSeparator->setVisible(visible);
+}
+
+static inline QString recentFilesKey() { return QStringLiteral("recentFileList"); }
+static inline QString fileKey() { return QStringLiteral("file"); }
+
+static QStringList readRecentFiles(QSettings &settings)
+{
+    QStringList result;
+    const int count = settings.beginReadArray(recentFilesKey());
+    for (int i = 0; i < count; ++i) {
+        settings.setArrayIndex(i);
+        result.append(settings.value(fileKey()).toString());
+    }
+    settings.endArray();
+    return result;
+}
+
+static void writeRecentFiles(const QStringList &files, QSettings &settings)
+{
+    const int count = files.size();
+    settings.beginWriteArray(recentFilesKey());
+    for (int i = 0; i < count; ++i) {
+        settings.setArrayIndex(i);
+        settings.setValue(fileKey(), files.at(i));
+    }
+    settings.endArray();
+}
+
+bool NonogramQt::hasRecentFiles()
+{
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+    const int count = settings.beginReadArray(recentFilesKey());
+    settings.endArray();
+    return count > 0;
+}
+
+void NonogramQt::prependToRecentFiles(const QString &fileName)
+{
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+
+    const QStringList oldRecentFiles = readRecentFiles(settings);
+    QStringList recentFiles = oldRecentFiles;
+    recentFiles.removeAll(fileName);
+    recentFiles.prepend(fileName);
+    if (oldRecentFiles != recentFiles)
+        writeRecentFiles(recentFiles, settings);
+
+    setRecentFilesVisible(!recentFiles.isEmpty());
+}
+
+QString NonogramQt::strippedName(const QString &fullFileName)
+{
+    return QFileInfo(fullFileName).fileName();
+}
+
+void NonogramQt::updateRecentFileActions()
+{
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+
+    const QStringList recentFiles = readRecentFiles(settings);
+    const int count = qMin(int(MaxRecentFiles), recentFiles.size());
+    int i = 0;
+    for ( ; i < count; ++i) {
+        const QString fileName = NonogramQt::strippedName(recentFiles.at(i));
+        recentFileActs[i]->setText(tr("&%1 %2").arg(i + 1).arg(fileName));
+        recentFileActs[i]->setData(recentFiles.at(i));
+        recentFileActs[i]->setVisible(true);
+    }
+    for ( ; i < MaxRecentFiles; ++i)
+        recentFileActs[i]->setVisible(false);
+}
+
+void NonogramQt::openRecentFile()
+{
+    if (const QAction *action = qobject_cast<const QAction *>(sender()))
+        loadFile(action->data().toString());
 }
 
 void NonogramQt::solve() {
@@ -258,7 +341,18 @@ void NonogramQt::create_actions()
     QAction *openAct = fileMenu->addAction(tr("&Open..."), this, &NonogramQt::open);
     openAct->setShortcut(QKeySequence::Open);
 
-    fileMenu->addSeparator();
+    QMenu *recentMenu = fileMenu->addMenu(tr("Recent..."));
+    connect(recentMenu, &QMenu::aboutToShow, this, &NonogramQt::updateRecentFileActions);
+    recentFileSubMenuAct = recentMenu->menuAction();
+
+    for (int i = 0; i < MaxRecentFiles; ++i) {
+        recentFileActs[i] = recentMenu->addAction(QString(), this, &NonogramQt::openRecentFile);
+        recentFileActs[i]->setVisible(false);
+    }
+
+    recentFileSeparator = fileMenu->addSeparator();
+
+    setRecentFilesVisible(NonogramQt::hasRecentFiles());
 
     QAction *exitAct = fileMenu->addAction(tr("E&xit"), this, &QWidget::close);
     exitAct->setShortcut(tr("Ctrl+Q"));

@@ -32,7 +32,8 @@ public:
 
 private slots:
     void open();
-
+    void updateRecentFileActions();
+    void openRecentFile();
     void solve();
     void change_step_by_step();
     void reset();
@@ -56,6 +57,10 @@ private:
     void update_gui_after_load();
     void enable_step_by_step();
     void disable_step_by_step();
+    void prependToRecentFiles(const QString &fileName);
+    void setRecentFilesVisible(bool visible);
+    static bool hasRecentFiles();
+    static QString strippedName(const QString &fullFileName);
 
     double          m_scale_factor         = 1;
     std::string     m_current_file_name;
@@ -70,7 +75,13 @@ private:
 
     QLabel          *image_label;
     QScrollArea     *scroll_area;
-    
+
+    enum { MaxRecentFiles = 5 };
+
+    QAction *recentFileActs[MaxRecentFiles];
+    QAction *recentFileSeparator;
+    QAction *recentFileSubMenuAct;
+
     QAction         *solve_act;
     QAction         *solve_step_act;
     QAction         *reset_act;

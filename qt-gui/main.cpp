@@ -6,6 +6,9 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+    QCoreApplication::setOrganizationName("fvbakel");
+    //QCoreApplication::setOrganizationDomain("example.com");
+    QCoreApplication::setApplicationName("Nonogram Qt");
     QGuiApplication::setApplicationDisplayName(NonogramQt::tr("Nonogram Qt"));
     QCommandLineParser commandLineParser;
     commandLineParser.addHelpOption();
