@@ -3,36 +3,50 @@
 #include <QtWidgets>
 
 NonogramQt::NonogramQt(QWidget *parent)
-   : QMainWindow(parent), imageLabel(new QLabel)
-   , scrollArea(new QScrollArea)
+   : QMainWindow(parent), image_label(new QLabel)
+   , scroll_area(new QScrollArea)
 {
-    imageLabel->setBackgroundRole(QPalette::Base);
-    imageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-    imageLabel->setScaledContents(true);
+    image_label->setBackgroundRole(QPalette::Base);
+    image_label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+    image_label->setScaledContents(true);
 
-    scrollArea->setBackgroundRole(QPalette::Dark);
-    scrollArea->setWidget(imageLabel);
-    scrollArea->setVisible(false);
+    scroll_area->setBackgroundRole(QPalette::Dark);
+    scroll_area->setWidget(image_label);
+    scroll_area->setVisible(false);
     
-    setCentralWidget(scrollArea);
+    setCentralWidget(scroll_area);
 
-    createActions();
+    create_actions();
 
     resize(QGuiApplication::primaryScreen()->availableSize() * 3 / 5);
     const QString message = tr("Select File -> Open...");
     statusBar()->showMessage(message);
 }
 
+void NonogramQt::parse_input_image() {
+    m_finder    = new imgsolver::GridFinder(&m_current_image,m_ocr_detector);
+    m_input     = m_finder->parse();
+    m_nonogram  = new Nonogram(*m_input);
+}
+void NonogramQt::parse_input_txt() {
+    m_finder    = nullptr;
+    m_input     = nullptr;
+    m_nonogram  = new Nonogram(m_current_file_name);
+}
+
 bool NonogramQt::loadFile(const QString &fileName)
 {
     m_current_file_name = fileName.toStdString();
     m_current_image = cv::imread(m_current_file_name,cv::IMREAD_GRAYSCALE);
-    if (!updateImage()) {
+    if (!update_image()) {
         return false;
     }
 
-    if (!fitToWindowAct->isChecked())
-        imageLabel->adjustSize();
+    parse_input_image();
+    update_gui_after_load();
+
+    if (!fit_to_window_act->isChecked())
+        image_label->adjustSize();
         
     setWindowFilePath(fileName);
 
@@ -43,7 +57,7 @@ bool NonogramQt::loadFile(const QString &fileName)
     return true;
 }
 
-bool NonogramQt::updateImage()
+bool NonogramQt::update_image()
 {
     QPixmap pixmap;
     if(m_current_image.type()==CV_8UC1)
@@ -73,17 +87,19 @@ bool NonogramQt::updateImage()
         return false;
     }
 
-    imageLabel->setPixmap(pixmap);
- 
-    
-    scrollArea->setVisible(true);
-    fitToWindowAct->setEnabled(true);
-    solveAct->setEnabled(true);
-    solveStepAct->setEnabled(true);
-    
-    updateActions();
+    image_label->setPixmap(pixmap);
     
     return true;
+}
+
+void NonogramQt::update_gui_after_load() {
+    scroll_area->setVisible(true);
+    fit_to_window_act->setEnabled(true);
+    solve_act->setEnabled(true);
+    solve_step_act->setEnabled(true);
+    reset_act->setEnabled(true);
+    
+    update_zoom_actions();
 }
 
 static void initializeImageFileDialog(QFileDialog &dialog, QFileDialog::AcceptMode acceptMode)
@@ -116,17 +132,32 @@ void NonogramQt::open()
     while (dialog.exec() == QDialog::Accepted && !loadFile(dialog.selectedFiles().first())) {}
 }
 
-void NonogramQt::solve()
-{
-    m_finder = new imgsolver::GridFinder(&m_current_image,ocr_detector);
-    //      m_finder->enable_dump_images();
-    m_input = m_finder->parse();
-    m_nonogram = new Nonogram(*m_input);
-    m_nonogram->solve();
-    if (m_nonogram->is_solved()) {
+void NonogramQt::solve() {
+    QString message;
+    if (m_nonogram != nullptr) {
+        m_nonogram->reset();
+        m_nonogram->solve();
         make_solution_image();
-        updateImage();
+        update_image();
+        if (m_nonogram->is_solved()) {
+            message = tr("Solved successfully");
+        } else {
+            message = tr("Unable to solve");
+        }
+    } else {
+        message = tr("No puzzle is loaded!");
     }
+    statusBar()->showMessage(message);
+}
+
+void NonogramQt::reset() {
+    QString file_name = QString(m_current_file_name.c_str());
+    loadFile(file_name);
+}
+
+void NonogramQt::solve_step_by_step() {
+    QMessageBox::information(this, tr("Nonogram Qt"),
+            tr("solve_step_by_step Not implemented yet!"));
 }
 
 void NonogramQt::make_solution_image() {
@@ -155,36 +186,29 @@ void NonogramQt::make_solution_image() {
     }
 }
 
-
-void NonogramQt::solve_step_by_step()
+void NonogramQt::zoom_in()
 {
-    QMessageBox::information(this, tr("Nonogram Qt"),
-            tr("solve_step_by_step Not implemented yet!"));
+    scale_image(1.25);
 }
 
-void NonogramQt::zoomIn()
+void NonogramQt::zoom_out()
 {
-    scaleImage(1.25);
+    scale_image(0.8);
 }
 
-void NonogramQt::zoomOut()
+void NonogramQt::normal_size()
 {
-    scaleImage(0.8);
+    image_label->adjustSize();
+    m_scale_factor = 1.0;
 }
 
-void NonogramQt::normalSize()
+void NonogramQt::fit_to_window()
 {
-    imageLabel->adjustSize();
-    scaleFactor = 1.0;
-}
-
-void NonogramQt::fitToWindow()
-{
-    bool fitToWindow = fitToWindowAct->isChecked();
-    scrollArea->setWidgetResizable(fitToWindow);
+    bool fitToWindow = fit_to_window_act->isChecked();
+    scroll_area->setWidgetResizable(fitToWindow);
     if (!fitToWindow)
-        normalSize();
-    updateActions();
+        normal_size();
+    update_zoom_actions();
 }
 
 void NonogramQt::about()
@@ -194,7 +218,7 @@ void NonogramQt::about()
                "</p>"));
 }
 
-void NonogramQt::createActions()
+void NonogramQt::create_actions()
 {
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
 
@@ -207,59 +231,63 @@ void NonogramQt::createActions()
     exitAct->setShortcut(tr("Ctrl+Q"));
 
     QMenu *solveMenu = menuBar()->addMenu(tr("&Solve"));
-    solveAct = solveMenu->addAction(tr("&Solve"), this, &NonogramQt::solve);
-    solveAct->setShortcut(tr("Ctrl+S"));
-    solveAct->setEnabled(false);
-    solveStepAct = solveMenu->addAction(tr("&Solve step by step"), this, &NonogramQt::solve_step_by_step);
-    solveStepAct->setShortcut(tr("Ctrl+D"));
-    solveStepAct->setEnabled(false);
+    solve_act = solveMenu->addAction(tr("&Solve"), this, &NonogramQt::solve);
+    solve_act->setShortcut(tr("Ctrl+S"));
+    solve_act->setEnabled(false);
+    solve_step_act = solveMenu->addAction(tr("&Solve step by step"), this, &NonogramQt::solve_step_by_step);
+    solve_step_act->setShortcut(tr("Ctrl+D"));
+    solve_step_act->setEnabled(false);
+
+    reset_act = solveMenu->addAction(tr("&Reset"), this, &NonogramQt::reset);
+    reset_act->setShortcut(tr("Ctrl+R"));
+    reset_act->setEnabled(false);
 
     QMenu *viewMenu = menuBar()->addMenu(tr("&View"));
 
-    zoomInAct = viewMenu->addAction(tr("Zoom &In (25%)"), this, &NonogramQt::zoomIn);
-    zoomInAct->setShortcut(QKeySequence::ZoomIn);
-    zoomInAct->setEnabled(false);
+    zoom_in_act = viewMenu->addAction(tr("Zoom &In (25%)"), this, &NonogramQt::zoom_in);
+    zoom_in_act->setShortcut(QKeySequence::ZoomIn);
+    zoom_in_act->setEnabled(false);
 
-    zoomOutAct = viewMenu->addAction(tr("Zoom &Out (25%)"), this, &NonogramQt::zoomOut);
-    zoomOutAct->setShortcut(QKeySequence::ZoomOut);
-    zoomOutAct->setEnabled(false);
+    zoom_out_act = viewMenu->addAction(tr("Zoom &Out (25%)"), this, &NonogramQt::zoom_out);
+    zoom_out_act->setShortcut(QKeySequence::ZoomOut);
+    zoom_out_act->setEnabled(false);
 
-    normalSizeAct = viewMenu->addAction(tr("&Normal Size"), this, &NonogramQt::normalSize);
-    normalSizeAct->setShortcut(tr("Ctrl+N"));
-    normalSizeAct->setEnabled(false);
+    normal_size_act = viewMenu->addAction(tr("&Normal Size"), this, &NonogramQt::normal_size);
+    normal_size_act->setShortcut(tr("Ctrl+N"));
+    normal_size_act->setEnabled(false);
 
     viewMenu->addSeparator();
 
-    fitToWindowAct = viewMenu->addAction(tr("&Fit to Window"), this, &NonogramQt::fitToWindow);
-    fitToWindowAct->setEnabled(false);
-    fitToWindowAct->setCheckable(true);
-    fitToWindowAct->setShortcut(tr("Ctrl+F"));
+    fit_to_window_act = viewMenu->addAction(tr("&Fit to Window"), this, &NonogramQt::fit_to_window);
+    fit_to_window_act->setEnabled(false);
+    fit_to_window_act->setCheckable(true);
+    fit_to_window_act->setShortcut(tr("Ctrl+F"));
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
 
     helpMenu->addAction(tr("&About"), this, &NonogramQt::about);
 }
 
-void NonogramQt::updateActions()
+void NonogramQt::update_zoom_actions()
 {
-    zoomInAct->setEnabled(!fitToWindowAct->isChecked());
-    zoomOutAct->setEnabled(!fitToWindowAct->isChecked());
-    normalSizeAct->setEnabled(!fitToWindowAct->isChecked());
+    zoom_in_act->setEnabled(!fit_to_window_act->isChecked());
+    zoom_out_act->setEnabled(!fit_to_window_act->isChecked());
+    normal_size_act->setEnabled(!fit_to_window_act->isChecked());
 }
 
-void NonogramQt::scaleImage(double factor)
+void NonogramQt::scale_image(double factor)
 {
-    scaleFactor *= factor;
-    imageLabel->resize(scaleFactor * imageLabel->pixmap(Qt::ReturnByValue).size());
+    m_scale_factor *= factor;
+    image_label->resize(m_scale_factor * image_label->pixmap(Qt::ReturnByValue).size());
 
-    adjustScrollBar(scrollArea->horizontalScrollBar(), factor);
-    adjustScrollBar(scrollArea->verticalScrollBar(), factor);
+    adjust_scroll_bar(scroll_area->horizontalScrollBar(), factor);
+    adjust_scroll_bar(scroll_area->verticalScrollBar(), factor);
 
-    zoomInAct->setEnabled(scaleFactor < 3.0);
-    zoomOutAct->setEnabled(scaleFactor > 0.333);
+    zoom_in_act->setEnabled(m_scale_factor < 3.0);
+    zoom_out_act->setEnabled(m_scale_factor > 0.333);
 }
 
-void NonogramQt::adjustScrollBar(QScrollBar *scrollBar, double factor)
+void NonogramQt::adjust_scroll_bar(QScrollBar *scrollBar, double factor)
 {
     scrollBar->setValue(int(factor * scrollBar->value()
                             + ((factor - 1) * scrollBar->pageStep()/2)));

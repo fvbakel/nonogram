@@ -32,22 +32,26 @@ private slots:
 
     void solve();
     void solve_step_by_step();
-    void zoomIn();
-    void zoomOut();
-    void normalSize();
-    void fitToWindow();
+    void reset();
+    void zoom_in();
+    void zoom_out();
+    void normal_size();
+    void fit_to_window();
     void about();
 
 private:
-    void createActions();
-    void createMenus();
-    void updateActions();
-    bool updateImage();
-    void scaleImage(double factor);
-    void adjustScrollBar(QScrollBar *scrollBar, double factor);
+    void create_actions();
+    void create_menus();
+    void update_zoom_actions();
+    bool update_image();
+    void scale_image(double factor);
+    void adjust_scroll_bar(QScrollBar *scroll_bar, double factor);
     void make_solution_image();
+    void parse_input_image();
+    void parse_input_txt();
+    void update_gui_after_load();
 
-    double          scaleFactor         = 1;
+    double          m_scale_factor         = 1;
     std::string     m_current_file_name;
     cv::Mat         m_current_image;
 
@@ -55,16 +59,17 @@ private:
     NonogramInput           *m_input      = nullptr;
     imgsolver::GridFinder   *m_finder     = nullptr;
     //TODO: make configurable
-    enum imgsolver::detector ocr_detector = imgsolver::detector::DNN;
+    enum imgsolver::detector m_ocr_detector = imgsolver::detector::DNN;
 
-    QLabel          *imageLabel;
-    QScrollArea     *scrollArea;
+    QLabel          *image_label;
+    QScrollArea     *scroll_area;
     
-    QAction         *solveAct;
-    QAction         *solveStepAct;
+    QAction         *solve_act;
+    QAction         *solve_step_act;
+    QAction         *reset_act;
 
-    QAction         *zoomInAct;
-    QAction         *zoomOutAct;
-    QAction         *normalSizeAct;
-    QAction         *fitToWindowAct;
+    QAction         *zoom_in_act;
+    QAction         *zoom_out_act;
+    QAction         *normal_size_act;
+    QAction         *fit_to_window_act;
 };
