@@ -10,6 +10,8 @@
 #include <imgsolver/GridFinder.h>
 #include <solvercore/Nonogram.h>
 
+#include "Location_observer.h"
+
 QT_BEGIN_NAMESPACE
 class QAction;
 class QLabel;
@@ -26,12 +28,13 @@ public:
     NonogramQt(QWidget *parent = nullptr);
     ~NonogramQt();
     bool loadFile(const QString &);
+    void draw_location(Location *location);
 
 private slots:
     void open();
 
     void solve();
-    void solve_step_by_step();
+    void change_step_by_step();
     void reset();
     void zoom_in();
     void zoom_out();
@@ -44,12 +47,15 @@ private:
     void create_menus();
     void update_zoom_actions();
     bool update_image();
+    void _draw_location(Location *location);
     void scale_image(double factor);
     void adjust_scroll_bar(QScrollBar *scroll_bar, double factor);
     void make_solution_image();
     void parse_input_image();
     void parse_input_txt();
     void update_gui_after_load();
+    void enable_step_by_step();
+    void disable_step_by_step();
 
     double          m_scale_factor         = 1;
     std::string     m_current_file_name;
@@ -60,6 +66,7 @@ private:
     imgsolver::GridFinder   *m_finder     = nullptr;
     //TODO: make configurable
     enum imgsolver::detector m_ocr_detector = imgsolver::detector::DNN;
+    Location_observer       *m_loc_observer = nullptr;
 
     QLabel          *image_label;
     QScrollArea     *scroll_area;
@@ -72,4 +79,8 @@ private:
     QAction         *zoom_out_act;
     QAction         *normal_size_act;
     QAction         *fit_to_window_act;
+
+    cv::Vec3b white_col = cv::Vec3b(255,255, 255);
+    cv::Vec3b black_col = cv::Vec3b(0,0, 0);
+    cv::Vec3b no_color_col = cv::Vec3b(0,255, 0);
 };

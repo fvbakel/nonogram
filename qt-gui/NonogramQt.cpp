@@ -136,6 +136,9 @@ void NonogramQt::solve() {
     QString message;
     if (m_nonogram != nullptr) {
         m_nonogram->reset();
+        if (m_loc_observer != nullptr) {
+            m_nonogram->attach_observer(m_loc_observer);
+        }
         m_nonogram->solve();
         make_solution_image();
         update_image();
@@ -150,14 +153,57 @@ void NonogramQt::solve() {
     statusBar()->showMessage(message);
 }
 
+void NonogramQt::enable_step_by_step() {
+    if (m_loc_observer == nullptr) {
+        m_loc_observer = new Location_observer(this);
+    }
+}
+void NonogramQt::disable_step_by_step() {
+    if (m_loc_observer != nullptr) {
+        m_nonogram->detach_observer(m_loc_observer);
+        delete m_loc_observer;
+        m_loc_observer = nullptr;
+    }
+}
+
+void NonogramQt::change_step_by_step() {
+    if (solve_step_act->isChecked()) {
+        enable_step_by_step();
+    } else {
+        disable_step_by_step();
+    }
+}
+
 void NonogramQt::reset() {
     QString file_name = QString(m_current_file_name.c_str());
     loadFile(file_name);
 }
 
-void NonogramQt::solve_step_by_step() {
-    QMessageBox::information(this, tr("Nonogram Qt"),
-            tr("solve_step_by_step Not implemented yet!"));
+/*
+Public method
+*/
+void NonogramQt::draw_location(Location *location) {
+    _draw_location(location);
+    update_image();
+    image_label->repaint();
+}
+
+/*
+Internal method
+*/
+void NonogramQt::_draw_location(Location *location) {
+    int x_index = location->get_x();
+    int y_index = location->get_y();
+    enum color loc_color = location->get_color();
+    cv::Vec3b *chosen = &white_col;
+    if (loc_color == black) {
+        chosen = &black_col;
+    } else if (loc_color == no_color) {
+        chosen = &no_color_col;
+    }
+    cv::Rect loc_rect;
+    m_finder->get_location(x_index,y_index,loc_rect);
+    cv::rectangle(m_current_image,loc_rect,*chosen,cv::FILLED);
 }
 
 void NonogramQt::make_solution_image() {
@@ -165,23 +211,10 @@ void NonogramQt::make_solution_image() {
     int x_size = m_nonogram->get_x_size();
     int y_size = m_nonogram->get_y_size();
 
-    cv::Vec3b white_col = cv::Vec3b(255,255, 255);
-    cv::Vec3b black_col = cv::Vec3b(0,0, 0);
-    cv::Vec3b no_color_col = cv::Vec3b(0,255, 0);
-
     for (int y_index = 0; y_index < y_size; y_index++) {
         for (int x_index = 0; x_index < x_size; x_index++) {
             Location *location = m_nonogram->get_Location(x_index, y_index);
-            enum color loc_color = location->get_color();
-            cv::Vec3b *chosen = &white_col;
-            if (loc_color == black) {
-                chosen = &black_col;
-            } else if (loc_color == no_color) {
-                chosen = &no_color_col;
-            }
-            cv::Rect loc_rect;
-            m_finder->get_location(x_index,y_index,loc_rect);
-            cv::rectangle(m_current_image,loc_rect,*chosen,cv::FILLED);
+            _draw_location(location);
         }
     }
 }
@@ -234,8 +267,11 @@ void NonogramQt::create_actions()
     solve_act = solveMenu->addAction(tr("&Solve"), this, &NonogramQt::solve);
     solve_act->setShortcut(tr("Ctrl+S"));
     solve_act->setEnabled(false);
-    solve_step_act = solveMenu->addAction(tr("&Solve step by step"), this, &NonogramQt::solve_step_by_step);
-    solve_step_act->setShortcut(tr("Ctrl+D"));
+    
+    solveMenu->addSeparator();
+
+    solve_step_act = solveMenu->addAction(tr("&Step by step"), this, &NonogramQt::change_step_by_step);
+    solve_step_act->setCheckable(true);
     solve_step_act->setEnabled(false);
 
     reset_act = solveMenu->addAction(tr("&Reset"), this, &NonogramQt::reset);
@@ -305,5 +341,9 @@ NonogramQt::~NonogramQt() {
 
     if (m_finder != nullptr) {
         delete m_finder;
+    }
+
+    if (m_loc_observer != nullptr) {
+        delete m_loc_observer;
     }
 }

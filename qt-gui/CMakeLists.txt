@@ -7,7 +7,7 @@ find_package(OpenCV REQUIRED)
 
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
-add_executable(nonogram-qt main.cpp NonogramQt.cpp NonogramQt.h)
+add_executable(nonogram-qt main.cpp NonogramQt.cpp NonogramQt.h Location_observer.h Location_observer.cpp)
 target_link_libraries(nonogram-qt Qt5::Widgets)
 target_link_libraries(nonogram-qt imgsolver solvercore ${OpenCV_LIBS})
 

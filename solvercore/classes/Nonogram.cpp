@@ -176,8 +176,8 @@ void Nonogram::reset() {
 }
 
 void Nonogram::create_locations() {
-    for (int x_index = 0; x_index < m_x_size; x_index++) {
-        for (int y_index = 0; y_index < m_y_size; y_index++) {
+    for (int y_index = 0; y_index < m_y_size; y_index++) {
+        for (int x_index = 0; x_index < m_x_size; x_index++) {
             m_locations.push_back(new Location(x_index, y_index));
         }    
     }
