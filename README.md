@@ -1,5 +1,7 @@
 # Nonogram
 
+## Build and install
+
 A `CMakeList.txt` file is provided to allow development, build, test, installation and packaging with the CMake tool chain and all IDE's that support CMake.
 
 To build with cmake you need to install cmake. Once installed use the procedure below:
@@ -11,7 +13,14 @@ cmake ../
 cmake --build ./
 ```
 
-To make a test installation and run the program:
+To test after build
+
+```sh
+cd qt-gui
+./nonogram-qt
+```
+
+To make a test installation:
 
 ```sh
 mkdir build
@@ -33,3 +42,15 @@ cmake ../
 cmake --build ./
 cpack ./
 ```
+
+## Configuration options
+
+Configuration parameters:
+
+export TESSDATA_PREFIX=~/git/tessdata_best
+export MODEL_DIR=~git/nonogram/models
+
+## Small facts
+
+The default detector for parsing images is the DNN method for the nonogram-qt GUI. This should be configurable.
+
