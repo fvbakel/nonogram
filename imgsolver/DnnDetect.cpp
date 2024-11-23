@@ -38,7 +38,6 @@ namespace imgsolver {
     }
 
     int DnnDetect::parse_digit(int i) {
-        m_bb_digits[i];
         cv::Mat tmp_img;
         cv::resize( m_bw_img(m_bb_digits[i]),
                     tmp_img,

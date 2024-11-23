@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.10...3.28)
 
 #set(OpenCV_STATIC ON)
 #set (OpenCV_DIR /usr/share/OpenCV)

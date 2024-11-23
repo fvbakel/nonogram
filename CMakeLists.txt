@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.5...3.28)
 project(nonogram_all VERSION 0.1.0)
 #https://gitlab.com/CLIUtils/modern-cmake/-/tree/master/examples/extended-project
 
